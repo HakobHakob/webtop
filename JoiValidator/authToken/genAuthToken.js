@@ -3,8 +3,6 @@ const jwt = require("jsonwebtoken")
 
 const secretKey = process.env.JWT_SECRET_KEY
 
-
-
 const genAuthToken = (user) => {
   const accessToken = jwt.sign(
     {
@@ -26,7 +24,7 @@ const genAuthToken = (user) => {
     { expiresIn: "20s" } //This means that the token will expire after one day
   )
 
-  return {accessToken,refreshToken}
+  return { accessToken, refreshToken }
 }
 
 module.exports = genAuthToken
