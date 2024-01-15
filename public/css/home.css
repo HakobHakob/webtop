@@ -1,0 +1,10 @@
+.home {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+  justify-content: flex-start;
+  flex-direction: column;
+  background: linear-gradient(to right top, #9ce8ee, #ddffea);
+  color: #d71bda;
+  padding-top: 0;
+}

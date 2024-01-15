@@ -9,6 +9,13 @@ const session = require("express-session")
 const moment = require("moment")
 const cron = require("node-cron")
 
+
+const bodyParser = require("body-parser")
+const webRouter = require("./routes/web")
+const usersRouter = require("./routes/api_v1")
+
+const app = express()
+
 //---------------------winston logger-start---------------------------------------------
 const winston = require("winston")
 // Создайте логгер с несколькими транспортами (куда записывать логи)
@@ -77,11 +84,6 @@ process.stderr.write = (mes, c) => {
 // });
 //---------------------winston logger-end---------------------------------------------
 
-const bodyParser = require("body-parser")
-const webRouter = require("./routes/web")
-const usersRouter = require("./routes/users")
-
-const app = express()
 
 // For set headers in res (res) object
 const cors = require("cors")

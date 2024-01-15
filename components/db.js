@@ -8,7 +8,7 @@ const DB = (query) => {
       user: "root",
       port: 3306,
       password: "",
-      database: "node_sample",
+      database: "webtop_db",
     })
     return connection.query(query)
   } catch (e) {

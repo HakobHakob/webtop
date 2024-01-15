@@ -23,8 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       firstName: DataTypes.STRING,
       lastName: DataTypes.STRING,
       email: DataTypes.STRING,
-      createdAt: DataTypes.DATE,
-      updatedAt: DataTypes.DATE,
+      created_at: DataTypes.DATE,
+      updated_at: DataTypes.DATE,
       password: {
         type: DataTypes.STRING,
         set(value) {
@@ -42,10 +42,10 @@ module.exports = (sequelize, DataTypes) => {
       modelName: "User",
       tableName: "users",
       // timestamps: true,
-      // createdAt: "created_at",
-      // updatedAt: "updated_at",
-      // created_at: 'createTimestamp',
-      // updated_at: 'updateTimestamp',
+      createdAt: "created_at",
+      updatedAt: "updated_at",
+      created_at: 'createTimestamp',
+      updated_at: 'updateTimestamp',
     }
   )
   return User

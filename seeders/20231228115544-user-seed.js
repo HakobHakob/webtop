@@ -8,8 +8,8 @@ const userInstance = User.build({
   firstName: "John",
   lastName: "Doe",
   email: "example@email.com",
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  created_at: new Date(),
+  updated_at: new Date(),
   password: bcrypt.hashSync("123456", 10),
 })
 
@@ -32,8 +32,8 @@ module.exports = {
           firstName: userInstance.firstName,
           lastName: userInstance.lastName,
           email: userInstance.email,
-          createdAt: userInstance.createdAt,
-          updatedAt: userInstance.updatedAt,
+          created_at: userInstance.created_at,
+          updated_at: userInstance.updated_at,
           password: userInstance.password,
         },
       ],

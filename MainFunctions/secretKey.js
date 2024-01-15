@@ -1,6 +1,6 @@
 let SEKRET_KEY = ""
 
-const secretKey =  () => {
+const secretKey = () => {
   SEKRET_KEY = require("crypto").randomBytes(64).toString("hex")
 
   return SEKRET_KEY
