@@ -1,0 +1,15 @@
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/register.css" />
+
+<%- contentFor('content') %>
+<form action="/register" method="post" class="login-form">
+  <h2>Registration</h2>
+  <p>To register, enter:</p>
+
+  <input type="text" placeholder="username " name="username" required />
+  <input type="text" placeholder="userlastname " name="userlastname" required />
+  <input type="email" placeholder="email " name="email" required />
+  <input type="password" placeholder="password"  name="password" required />
+
+  <button type="submit" class="login-btn">Register</button>
+</form>

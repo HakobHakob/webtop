@@ -1,0 +1,26 @@
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/login.css" />
+
+<%- contentFor('content') %>
+<form action="/login" method="post" class="login-form">
+  <h2>Login</h2>
+
+  <p>Enter login and password:</p>
+  <input type="text" placeholder="email" name="email" required />
+  <% if(locals.errors && "email" in locals.errors) { %>
+  <div class="error-div"><%= locals.errors.email %></div>
+  <% } %>
+
+  <input type="password" placeholder="password" name="password" required />
+  <% if(locals.errors && "password" in locals.errors) { %>
+  <div class="error-div"><%= locals.errors.password %></div>
+  <% } %>
+
+  <div class="checkbox-box">
+    <input type="checkbox" placeholder="Remember me" />
+    <p id="remember-me">Remember me</p>
+  </div>
+  <button class="login-btn">Login</button>
+</form>
+
+

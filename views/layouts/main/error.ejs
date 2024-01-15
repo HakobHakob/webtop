@@ -1,0 +1,12 @@
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/error.css" />
+
+<%- contentFor('content') %>
+<div class="error">
+  <h1><%= message %></h1>
+  <h2 class="error-code"><%= error.status %></h2>
+</div>
+
+
+
+

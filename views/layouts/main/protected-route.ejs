@@ -1,0 +1,12 @@
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/protected.css" />
+
+<%- contentFor('content') %>
+<div class="protected">
+  <h1><%= title %></h1>
+  <p>Welcome to <%= title %></p>
+
+  <h3>Welcome to the Protected Route, <%= user.id %>!</h3>
+  <h3>Welcome to the Protected Route, <%= user.name %>!</h3>
+  <h3>Welcome to the Protected Route, <%= user.email %>!</h3>
+</div>
