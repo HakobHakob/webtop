@@ -19,4 +19,6 @@ const DB = (query) => {
 // const products = DB("SELECT * FROM products LIMIT 3")
 // console.log("products", products)
 
+
+
 module.exports = { DB }

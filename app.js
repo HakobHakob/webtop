@@ -8,11 +8,10 @@ const logger = require("morgan")
 const session = require("express-session")
 const moment = require("moment")
 const cron = require("node-cron")
-
-
 const bodyParser = require("body-parser")
+
 const webRouter = require("./routes/web")
-const usersRouter = require("./routes/api_v1")
+const apiRouter = require("./routes/api_v1")
 
 const app = express()
 
@@ -194,7 +193,7 @@ app.use(async (req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use("/", webRouter)
-app.use("/users", usersRouter)
+app.use("/api/v1", apiRouter)
 
 // catch 404 and forward to error handler
 app.use((req, res, next) => {

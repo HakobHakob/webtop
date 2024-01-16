@@ -8,8 +8,8 @@ const userInstance = User.build({
   firstName: "John",
   lastName: "Doe",
   email: "example@email.com",
-  created_at: new Date(),
-  updated_at: new Date(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
   password: bcrypt.hashSync("123456", 10),
 })
 
@@ -32,8 +32,8 @@ module.exports = {
           firstName: userInstance.firstName,
           lastName: userInstance.lastName,
           email: userInstance.email,
-          created_at: userInstance.created_at,
-          updated_at: userInstance.updated_at,
+          createdAt: userInstance.createdAt,
+          updatedAt: userInstance.updatedAt,
           password: userInstance.password,
         },
       ],
@@ -42,12 +42,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    /**
-     * Add commands to revert seed here.
-     *
-     * Example:
-     * await queryInterface.bulkDelete('People', null, {});
-     */
     await queryInterface.bulkDelete("Users", null, {})
   },
 }
