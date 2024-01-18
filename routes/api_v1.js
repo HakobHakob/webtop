@@ -16,13 +16,11 @@ router.get("/", async (req, res, next) => {
 
 /* Login page */
 router.post("/login", async (req, res, next) => {
-  let backURL
-  const errors = {}
+  req.session.errors = req.session.errors || {}
 
   const validation_error = api_validate(req, res)
   if (validation_error) {
-    backURL = req.header("Referer")
-    return res.redirect(backURL)
+    return res.redirectBack()
   }
 
   const { email, password } = req.body
@@ -31,7 +29,7 @@ router.post("/login", async (req, res, next) => {
   if (!user) {
     req.session.errors["email"] = "Invalid email !!!"
 
-    return res.redirectBack();
+    return res.redirectBack()
   }
 
   //  cheking that is valid email or password

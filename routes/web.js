@@ -22,17 +22,19 @@ router.get("/login", async (req, res, next) => {
 
 /* POST login page */
 router.post("/login", async (req, res, next) => {
-  let backURL
-  const errors = {}
+  req.session.errors = req.session.errors || {}
+
   if (res.locals.auth.user) {
     return res.redirect("/")
   }
 
-  if (!validate(req, res)) {
+  const validation_error = validate(req, res)
+  if (!validation_error) {
     return res.redirectBack()
   }
 
   const { email, password } = req.body
+
   const user = await User.findOne({ where: { email: email } })
 
   if (!user) {

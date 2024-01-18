@@ -10,16 +10,14 @@ const validate = (req, res) => {
   for (let key in schema) {
     newSchema[key] = req.body[key]
   }
+
   const joiErrors = schema_joi.validate(newSchema, { abortEarly: false }).error
 
   if (joiErrors) {
-    req.session.errors = {}
     joiErrors.details.forEach((err_item) => {
       req.session.errors[err_item.path[0]] = err_item.message
     })
     return false
-    // let backURL = req.header('Referer') || '/';
-    // return res.redirect(backURL);
   }
   return true
 }

@@ -3,7 +3,7 @@ const express = require("express")
 const path = require("path")
 const fs = require("node:fs")
 const cookieParser = require("cookie-parser")
-const log = require("./logger/logger")
+// const log = require("./logger/logger")
 const session = require("express-session")
 const bodyParser = require("body-parser")
 const formData = require("express-form-data")
@@ -20,7 +20,7 @@ const {
 
 const app = express()
 
-log.info("This is an information message.")
+// log.info("This is an information message.")
 
 // configure our .env file
 const dotenv = require("dotenv")
