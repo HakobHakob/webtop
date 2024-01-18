@@ -5,7 +5,7 @@
  */
 const { exec, spawn } = require("node:child_process")
 const moment = require("moment/moment")
-require("../components/logger")
+const log = require("../logger/logger")
 try {
   const app = require("../app")
   const debug = require("debug")("sample-nodejs:server")
@@ -91,6 +91,9 @@ try {
   console.error(error)
   setTimeout(() => {
     // process.exit(1);
+    log.error(
+      moment().format("yyyy_MM_DD-HH:mm:ss") + "\n" + error.stack + "\n\n"
+    )
     spawn(process.argv[0], process.argv.slice(1), {
       env: { process_restarting: 1 },
       stdio: "ignore",
