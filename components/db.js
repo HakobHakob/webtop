@@ -1,5 +1,5 @@
-const mysql = require('mysql');
-const mysql_sync = require('sync-mysql') ;
+const mysql = require("mysql")
+const mysql_sync = require("sync-mysql")
 
 const DB = (query) => {
   try {
@@ -11,14 +11,12 @@ const DB = (query) => {
       database: "webtop_db",
     })
     return connection.query(query)
-  } catch (e) {
-    return { error: e }
+  } catch (error) {
+    return { error }
   }
 }
 
 // const products = DB("SELECT * FROM products LIMIT 3")
 // console.log("products", products)
-
-
 
 module.exports = { DB }

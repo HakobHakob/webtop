@@ -1,45 +1,39 @@
 "use strict"
+const { conf } = require("../config/app_config")
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Users", {
-      id: {
+    await queryInterface.createTable("tokens", {
+      user_id: {
+        // allowNull default is true
         allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
         type: Sequelize.BIGINT,
       },
-      firstName: {
-        type: Sequelize.STRING,
-      },
-      lastName: {
-        type: Sequelize.STRING,
-      },
-      email: {
-        type: Sequelize.STRING,
-      },
-      password: {
-        type: Sequelize.TEXT,
-      },
-      emailVerifyedAt: {
-        allowNull: true,
-        type: Sequelize.DATE,
-      },
       role: {
-        allowNull: true,
         type: Sequelize.STRING,
+        allowNull: false,
       },
-      createdAt: {
+      token: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+      },
+      refresh_token_date: {
         allowNull: true,
         type: Sequelize.DATE,
       },
-      updatedAt: {
+      created_at: {
+        allowNull: true,
+        type: Sequelize.DATE,
+      },
+      updated_at: {
         allowNull: true,
         type: Sequelize.DATE,
       },
     })
   },
+
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Users")
+    await queryInterface.dropTable(conf.cookie.ses_table_name)
   },
 }

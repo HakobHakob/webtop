@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt")
 const { Model } = require("sequelize")
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-   
     static associate(models) {
       // define association here
     }
@@ -26,6 +25,8 @@ module.exports = (sequelize, DataTypes) => {
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
+      role: DataTypes.STRING,
+      emailVerifyedAt: DataTypes.DATE,
     },
     {
       sequelize,
