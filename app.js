@@ -6,6 +6,8 @@ const cookieParser = require("cookie-parser")
 // const log = require("./logger/logger")
 const session = require("express-session")
 const bodyParser = require("body-parser")
+const formData = require("express-form-data")
+const os = require("node:os")
 
 const webRouter = require("./routes/web")
 const apiRouter = require("./routes/api_v1")
@@ -32,6 +34,7 @@ app.set("view engine", "ejs")
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(formData.parse({ uploadDir: os.tmpdir(), autoClean: true }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, "public")))
 

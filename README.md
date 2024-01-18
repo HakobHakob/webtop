@@ -12,6 +12,7 @@ npm i mysql
 npm i sync-mysql
 npm i bcrypt
 npm i mysql2
+npm i express-form-data
 npm i express-session
 npm i express-validator
 npm i cors
