@@ -13,6 +13,7 @@ const webRouter = require("./routes/web")
 const apiRouter = require("./routes/api_v1")
 
 const authMiddleware = require("./middlewares/authMiddleware")
+const api_auth = require("./middlewares/api_auth")
 const {
   notFoundHandler,
   errorHandler,
@@ -51,6 +52,7 @@ app.use(
 app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use(authMiddleware)
+app.use(api_auth)
 
 app.use("/", webRouter)
 app.use("/api/v1", apiRouter)

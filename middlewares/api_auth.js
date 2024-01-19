@@ -3,7 +3,7 @@ const { getUserByToken } = require("../components/functions")
 const api_auth = async (req, res, next) => {
   const BEARER_PREFIX = "Bearer "
   res.locals.api_auth = {}
-  const bearer_token = req.headers.authorization
+  let bearer_token = req.headers.authorization
   bearer_token =
     bearer_token && bearer_token.startsWith(BEARER_PREFIX)
       ? bearer_token.slice(BEARER_PREFIX.length)

@@ -8,7 +8,6 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     getFullName() {
-      // bcrypt.compareSync('qwerty', '$2b$08$anjueAN9I.ROPfygoSbF2uyqSvpFhwW/ZpIXXgqvG0fd4kTnGAMPa');
       return [this.first_name, this.last_name].join(" ")
     }
   }
@@ -22,6 +21,9 @@ module.exports = (sequelize, DataTypes) => {
         set(value) {
           this.setDataValue("password", bcrypt.hashSync(value, 8))
         },
+        get(){
+          return null
+        }
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,

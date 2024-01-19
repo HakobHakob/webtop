@@ -8,6 +8,7 @@ const {
   saveAndGetUserToken,
   apiLogoutUser,
 } = require("../components/functions")
+const userResource = require("../components/resources/user")
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {
@@ -16,38 +17,37 @@ router.get("/", async (req, res, next) => {
 
 /* Login page */
 router.post("/login", async (req, res, next) => {
-  req.session.errors = req.session.errors || {}
-
   const validation_error = api_validate(req, res)
   if (validation_error) {
-    return res.redirectBack()
+    res.status(422)
+    return res.send({ errors: validation_error })
   }
 
   const { email, password } = req.body
   const user = await User.findOne({ where: { email: email } })
 
-  if (!user) {
-    req.session.errors["email"] = "Invalid email !!!"
-
-    return res.redirectBack()
-  }
-
-  //  cheking that is valid email or password
-  const isValid = await bcrypt.compare(password, user.dataValues.password)
-
-  if (!isValid) {
-    req.session.errors["password"] = "Invalid password !!!"
-    return res.redirectBack()
+  let errors = {}
+  if (user) {
+    if (!bcrypt.compareSync(password, user.dataValues.password)) {
+      errors["password"] = "The password is incorrect."
+      res.status(403)
+      return res.send({ errors })
+    }
+  } else {
+    errors["email"] = "The user with this email does not exists."
+    res.status(403)
+    return res.send({ errors })
   }
 
   const token = await saveAndGetUserToken(user.dataValues.id, "admin")
 
-  return res.send({ user, token })
+  return res.send({ user: userResource(user), token })
 })
 
 // Do logout
 router.get("/logout", async (req, res, next) => {
   let logout = false
+
   if (res.locals.api_auth.admin) {
     logout = await apiLogoutUser(
       res.locals.api_auth.admin.dataValues.id,
