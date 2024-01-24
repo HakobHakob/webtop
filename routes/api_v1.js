@@ -10,6 +10,7 @@ const {
 } = require("../components/functions")
 const userResource = require("../components/resources/user")
 
+
 /* GET home page. */
 router.get("/", async (req, res, next) => {
   res.send("respond with a resource", { title: "Home" })

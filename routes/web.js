@@ -4,6 +4,9 @@ const bcrypt = require("bcrypt")
 const { User } = require("../models")
 const { loginUser, logoutUser } = require("../components/functions")
 const { validate } = require("../components/validate")
+//import controllers media
+const sharp = require("sharp")
+const mediaController = require("../controllers/mediaController/mediaController")
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {
@@ -59,6 +62,7 @@ router.post("/login", async (req, res, next) => {
 
 /*GET login page*/
 router.get("/about", async (req, res, next) => {
+  console.log("global.__basedir = __dirname >>>>>", __dirname)
   res.render("layouts/main/about", { title: "Login" })
 })
 
@@ -101,4 +105,18 @@ router.get("/logout", async (req, res, next) => {
   res.redirectBack()
 })
 
+router.get("/profile", async (req, res, next) => {
+  res.render("layouts/main/profile", {
+    title: "Profile",
+  })
+})
+
+// router.post("/profile", mediaController.upload, async (req, res) => {
+//  try {
+//   const file = req.file
+//  } catch (error) {
+  
+//  }
+
+// })
 module.exports = router

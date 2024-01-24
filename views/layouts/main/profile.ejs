@@ -1,0 +1,20 @@
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/login.css" />
+
+<%- contentFor('content') %>
+
+<div class="home" id="content">
+  <h1>Profile</h1>
+  <p>Welcome to profile</p>
+
+  <form
+    action="/profile"
+    method="post"
+    enctype="multipart/form-data"
+    class="login-form"
+  >
+    <input type="file" name="avatar" />
+    <button class="login-btn">Upload</button>
+  </form>
+  <!-- Users -->
+</div>

@@ -1,16 +1,16 @@
 const createError = require("http-errors")
 const express = require("express")
 const path = require("path")
-const fs = require("node:fs")
 const cookieParser = require("cookie-parser")
 // const log = require("./logger/logger")
 const session = require("express-session")
 const bodyParser = require("body-parser")
-const formData = require("express-form-data")
-const os = require("node:os")
+
+global.__basedir = __dirname
 
 const webRouter = require("./routes/web")
 const apiRouter = require("./routes/api_v1")
+const mediaRouter = require("./routes/api_v1_media")
 
 const authMiddleware = require("./middlewares/authMiddleware")
 const api_auth = require("./middlewares/api_auth")
@@ -35,7 +35,6 @@ app.set("view engine", "ejs")
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-app.use(formData.parse({ uploadDir: os.tmpdir(), autoClean: true }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, "public")))
 
@@ -56,6 +55,7 @@ app.use(api_auth)
 
 app.use("/", webRouter)
 app.use("/api/v1", apiRouter)
+app.use("/api/v1/media", mediaRouter)
 
 // Use the error handling middleware
 app.use(notFoundHandler)
