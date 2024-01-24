@@ -3,85 +3,100 @@
 /**
  * Module dependencies.
  */
+const { exec, spawn } = require("node:child_process")
+const moment = require("moment/moment")
+const log = require("../logger/logger")
+try {
+  const app = require("../app")
+  const debug = require("debug")("sample-nodejs:server")
+  const http = require("node:http")
 
-const app = require("../app")
-const debug = require("debug")("sample-nodejs:server")
-const http = require("http")
+  /**
+   * Get port from environment and store in Express.
+   */
 
-/**
- * Create HTTP server.
- */
+  const port = normalizePort(process.env.PORT || "3000")
+  app.set("port", port)
 
-const server = http.createServer(app)
+  /**
+   * Create HTTP server.
+   */
 
-/**
- * Normalize a port into a number, string, or false.
- */
-const normalizePort = (val) => {
-  const port = parseInt(val, 10)
+  const server = http.createServer(app)
 
-  if (isNaN(port)) {
-    // named pipe
-    return val
+  /**
+   * Listen on provided port, on all network interfaces.
+   */
+
+  server.listen(port)
+  server.on("error", onError)
+  server.on("listening", onListening)
+
+  /**
+   * Normalize a port into a number, string, or false.
+   */
+
+  function normalizePort(val) {
+    const port = parseInt(val, 10)
+
+    if (isNaN(port)) {
+      // named pipe
+      return val
+    }
+
+    if (port >= 0) {
+      // port number
+      return port
+    }
+
+    return false
   }
 
-  if (port >= 0) {
-    // port number
-    return port
-  }
+  /**
+   * Event listener for HTTP server "error" event.
+   */
 
-  return false
-}
-
-/**
- * Get port from environment and store in Express.
- */
-
-const port = normalizePort(process.env.PORT || "3000")
-app.set("port", port)
-
-/**
- * Event listener for HTTP server "error" event.
- */
-const onError = (error) => {
-  if (error.syscall !== "listen") {
-    throw error
-  }
-
-  const bind = typeof port === "string" ? "Pipe " + port : "Port " + port
-
-  // handle specific listen errors with friendly messages
-  switch (error.code) {
-    case "EACCES":
-      console.error(bind + " requires elevated privileges")
-      process.exit(1)
-      break
-    case "EADDRINUSE":
-      console.error(bind + " is already in use")
-      process.exit(1)
-      break
-    default:
+  function onError(error) {
+    if (error.syscall !== "listen") {
       throw error
+    }
+
+    let bind = typeof port === "string" ? "Pipe " + port : "Port " + port
+
+    // handle specific listen errors with friendly messages
+    switch (error.code) {
+      case "EACCES":
+        console.error(bind + " requires elevated privileges")
+        process.exit(1)
+        break
+      case "EADDRINUSE":
+        console.error(bind + " is already in use")
+        process.exit(1)
+        break
+      default:
+        throw error
+    }
   }
+
+  /**
+   * Event listener for HTTP server "listening" event.
+   */
+
+  function onListening() {
+    let addr = server.address()
+    let bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port
+    debug("Listening on " + bind)
+  }
+} catch (error) {
+  console.error(error)
+  setTimeout(() => {
+    // process.exit(1);
+    log.error(
+      moment().format("yyyy_MM_DD-HH:mm:ss") + "\n" + error.stack + "\n\n"
+    )
+    spawn(process.argv[0], process.argv.slice(1), {
+      env: { process_restarting: 1 },
+      stdio: "ignore",
+    }).unref()
+  }, 5000)
 }
-
-/**
- * Event listener for HTTP server "listening" event.
- */
-
-const onListening = () => {
-  // const addr = server.address()
-  const addr = "127.0.0.1"
-  const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port
-  debug("Listening on " + bind)
-  // error ? console.log(error) : console.log(`Server run to ${port}`)
-}
-
-/**
- * Listen on provided port, on all network interfaces.
- */
-
-server.listen(port)
-
-server.on("error", onError)
-server.on("listening", onListening)

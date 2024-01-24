@@ -1,40 +1,25 @@
 <nav class="nav">
-  <% if (fullUrl.path) { %>
-
   <ul>
-    <li
-      class="menu-li <%= fullUrl.path === '/home' || fullUrl.path === undefined || fullUrl.path === '/' ? 'activeLink' : '' %>"
-    >
+    <li>
       <a href="/">Home</a>
     </li>
-    <li class="menu-li <%= fullUrl.path === '/about' ? 'activeLink' : '' %>">
+    <li>
       <a href="/about">About</a>
     </li>
-    <li class="menu-li <%= fullUrl.path === '/contacts' ? 'activeLink' : '' %>">
-      <a href="/contacts">Contacts</a>
+    <li>
+      <a href="/profile">Profile</a>
     </li>
   </ul>
 
-  <% if(access_token && fullUrl.path !== "/error") { %>
-  <ul>
-    <li>
-      <a href="/logout">Logout</a>
-    </li>
-    <li>
-      <a href="/protected">Protected</a>
-    </li>
-  </ul>
-  <% } else { %>
   <ul>
     <li>
       <a href="/login">Login</a>
     </li>
     <li>
-      <a href="/Register">Registration</a>
+      <a href="/register">Registration</a>
+    </li>
+    <li>
+      <a href="/logout">Logout</a>
     </li>
   </ul>
-
-  <% }%> <% } else { %>
-  <p>No user information available.</p>
-  <% } %>
 </nav>

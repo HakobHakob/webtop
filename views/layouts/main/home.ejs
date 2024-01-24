@@ -1,33 +1,7 @@
-<title><%= title %></title>
-
-<%- contentFor('styles') %>
-<link rel="stylesheet" href="/css/home.css" />
-
 <%- contentFor('content') %>
 
 <div class="home" id="content">
-  <h1><%= title %></h1>
-  <p>Welcome to <%= title %></p>
+  <h1>home</h1>
+  <p>Welcome to home</p>
   <!-- Users -->
-  <div>
-    <% users.forEach(user => { %>
-    <p><%= user.firstName %></p>
-
-    <% }); %> <%= JSON.stringify(fullUrl.query) %>
-  </div>
-
-  <ul>
-    <% if(social && social.length > 0) { %> <% social.forEach(({name, link}) =>
-    { %>
-    <li>
-      <a href="<%= link %>"><%= name %></a>
-    </li>
-
-    <% }); %> <% } else { %>
-    <li>No social links available.</li>
-    <% } %>
-  </ul>
-
-  
 </div>
-

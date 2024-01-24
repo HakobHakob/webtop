@@ -1,23 +1,47 @@
 const Joi = require("joi")
 
-const validate = (schema, req, res) => {
+const validate = (req, res) => {
+  const schema = {
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).max(20).required(),
+  }
+  const schema_joi = Joi.object(schema)
+  let newSchema = {}
+  for (let key in schema) {
+    newSchema[key] = req.body[key]
+  }
+
+  const joiErrors = schema_joi.validate(newSchema, { abortEarly: false }).error
+
+  if (joiErrors) {
+    joiErrors.details.forEach((err_item) => {
+      req.session.errors[err_item.path[0]] = err_item.message
+    })
+    return false
+  }
+  return true
+}
+
+const api_validate = (req, res) => {
+  const schema = {
+    email: Joi.string().email().required(),
+    password: Joi.string().min(6).max(20).required(),
+  }
+  const valid_err = {}
   const schema_joi = Joi.object(schema)
   let newSchema = {}
   for (let key in schema) {
     newSchema[key] = req.body[key]
   }
   const joiErrors = schema_joi.validate(newSchema, { abortEarly: false }).error
-  //console.log('validate errors=', joiErrors);
+
   if (joiErrors) {
-    req.session.errors = {}
     joiErrors.details.forEach((err_item) => {
-      req.session.errors[err_item.path[0]] = err_item.message
+      valid_err[err_item.path[0]] = err_item.message
     })
-    return false
-    // let backURL = req.header('Referer') || '/';
-    // return res.redirect(backURL);
+    return valid_err
   }
-  return true
+  return null
 }
 
-module.exports = { validate }
+module.exports = { validate, api_validate }

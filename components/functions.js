@@ -2,26 +2,44 @@ const { User } = require("../models")
 const { conf } = require("../config/app_config")
 const db = require("../models")
 const queryInterface = db.sequelize.getQueryInterface()
+const bcrypt = require("bcrypt")
 
 const generateToken = (userId, role, tokenLength = 128) => {
-  let words =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()"
-  let timeWords = "$#@.-+*&^%"
+  const symbols =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()@!?<>"
   let token = userId + "'" + role + "'"
-  let time = Date.now().toString()
-  for (let i = 0; i < time.length; i++) {
-    token += timeWords[parseInt(time[i])]
-  }
-  for (let i = 0; i < tokenLength - time.length; i++) {
-    token += words[Math.floor(Math.random() * words.length)]
-  }
-  let hashedToken = bcrypt.hashSync(token, 8)
+  const time = Date.now().toString()
+  const coefficient = symbols.length / 10
+  const arr_st = []
+  Array.from({ length: 10 }).forEach((_, i) => {
+    arr_st.push(Math.round(i * coefficient))
+  })
+  arr_st.push(symbols.length)
+
+  time.split("").forEach((timeDigit) => {
+    const parsedDigit = parseInt(timeDigit)
+    const randomIndex =
+      Math.floor(
+        Math.random() * (arr_st[parsedDigit + 1] - arr_st[parsedDigit])
+      ) + arr_st[parsedDigit]
+    token += symbols[randomIndex]
+  })
+
+  Array.from({ length: tokenLength - time.length }).forEach(() => {
+    token += symbols[Math.floor(Math.random() * symbols.length)]
+  })
+  const hashedToken = bcrypt.hashSync(token, 8)
   return [token, hashedToken]
 }
 
+const saveAndGetUserToken = async (userId, role = "user") => {
+  const tokens = generateToken(userId, role)
+  await saveToken(userId, role, tokens[1])
+  return tokens[0]
+}
+
 const loginUser = async (userId, req, res, role = "user") => {
-  let tokens = generateToken(userId, role)
-  // req.session.tokens = {...(req.session.tokens ?? {}), [role]: tokens[0]};
+  const tokens = generateToken(userId, role)
   res.cookie(conf.cookie.prefix + conf.cookie.delimiter + role, tokens[0], {
     maxAge: conf.cookie.maxAge,
     httpOnly: true,
@@ -29,32 +47,46 @@ const loginUser = async (userId, req, res, role = "user") => {
   await saveToken(userId, role, tokens[1])
 }
 
-const getUserByToken = async (token) => {
-  let userId = token ? token.split(conf.cookie.delimiter)[0] : null
-  let userSessions = await queryInterface.select(
-    null,
-    conf.cookie.ses_table_name,
-    { where: { user_id: userId } }
-  )
-
+const getUserByToken = async (token, req, res, can_refresh_token = false) => {
+  let [userId, role] = token ? token.split(conf.cookie.delimiter) : [null, null]
+  let userSessions =
+    userId && role
+      ? await queryInterface.select(null, conf.cookie.ses_table_name, {
+          where: { user_id: userId, role: role },
+        })
+      : []
   for (const ses of userSessions) {
     if (bcrypt.compareSync(token, ses.token)) {
-      if (conf.cookie.re_save) {
-        await queryInterface.bulkUpdate(
-          conf.cookie.ses_table_name,
-          { updated_at: new Date() },
-          {
-            token: ses.token,
-            user_id: userId,
-            role: ses.role,
-          }
-        )
+      let values = { updated_at: new Date() }
+      let toRefresh = Boolean(
+        can_refresh_token &&
+          (ses.refresh_token_date ?? new Date()) <
+            new Date(new Date() - conf.cookie.refresh_timeout)
+      )
+      if (toRefresh) {
+        let newTokens = generateToken(userId, role)
+        values.token = newTokens[1]
+        values.refresh_token_date = new Date()
+        token = newTokens[0]
       }
-      return await User.findOne({ where: { id: userId } })
+      if (conf.cookie.re_save || toRefresh) {
+        await queryInterface.bulkUpdate(conf.cookie.ses_table_name, values, {
+          token: ses.token,
+          user_id: userId,
+          role: role,
+        })
+        res.cookie(conf.cookie.prefix + conf.cookie.delimiter + role, token, {
+          maxAge: conf.cookie.maxAge,
+          httpOnly: true,
+        })
+      }
+      let auth = await User.findOne({ where: { id: userId } })
+      if (auth) {
+        return [role, userId, auth]
+      }
     }
   }
-
-  return null
+  return [null, null, null]
 }
 
 const saveToken = async (userId, role, token) => {
@@ -65,21 +97,17 @@ const saveToken = async (userId, role, token) => {
         user_id: userId,
         role: role,
         token: token,
+        refresh_token_date: new Date(),
         created_at: new Date(),
         updated_at: new Date(),
       },
     ],
     {}
   )
-  // if(userId in global.usersTokens && Array.isArray(global.usersTokens[userId])){
-  //     global.usersTokens[userId].push(token);
-  // }else{
-  //     global.usersTokens[userId] = [token];
-  // }
 }
 
 const logoutUser = async (userId, role, req, res) => {
-  let cookie_key = conf.cookie.prefix + conf.cookie.delimiter + role
+  const cookie_key = conf.cookie.prefix + conf.cookie.delimiter + role
   if (cookie_key in req.cookies) {
     let userSessions = await queryInterface.select(
       null,
@@ -105,10 +133,50 @@ const logoutUser = async (userId, role, req, res) => {
         res.cookie(cookie_key, "", { maxAge: -1 })
       }
     }
-    // console.log(userSessions);
   }
-  // await queryInterface.bulkDelete('sessions', null, {where: {user_id: userId, role: role}});
-  // res.cookie('_t_ses\'' + role, '', {maxAge: -1});
 }
 
-module.exports = { generateToken, loginUser, getUserByToken, logoutUser }
+const apiLogoutUser = async (userId, role, req, res) => {
+  const BEARER_PREFIX = "Bearer "
+  let bearer_token = req.headers.authorization
+  bearer_token =
+    bearer_token && bearer_token.startsWith(BEARER_PREFIX)
+      ? bearer_token.slice(BEARER_PREFIX.length)
+      : null
+  if (bearer_token) {
+    let userSessions = await queryInterface.select(
+      null,
+      conf.cookie.ses_table_name,
+      {
+        where: {
+          user_id: userId,
+          role: role,
+        },
+      }
+    )
+    for (const ses of userSessions) {
+      if (bcrypt.compareSync(bearer_token, ses.token)) {
+        await queryInterface.bulkDelete(
+          conf.cookie.ses_table_name,
+          {
+            token: ses.token,
+            user_id: userId,
+            role: role,
+          },
+          {}
+        )
+        return true
+      }
+    }
+  }
+  return false
+}
+
+module.exports = {
+  generateToken,
+  saveAndGetUserToken,
+  loginUser,
+  getUserByToken,
+  logoutUser,
+  apiLogoutUser,
+}

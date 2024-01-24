@@ -1,5 +1,5 @@
-const mysql = require('mysql');
-const mysql_sync = require('sync-mysql') ;
+const mysql = require("mysql")
+const mysql_sync = require("sync-mysql")
 
 const DB = (query) => {
   try {
@@ -8,11 +8,11 @@ const DB = (query) => {
       user: "root",
       port: 3306,
       password: "",
-      database: "node_sample",
+      database: "webtop_db",
     })
     return connection.query(query)
-  } catch (e) {
-    return { error: e }
+  } catch (error) {
+    return { error }
   }
 }
 
