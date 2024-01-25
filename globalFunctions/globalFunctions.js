@@ -21,7 +21,6 @@ const makeDirectory = async (path) => {
       addPath += pathItem + "/"
       if (!fs.existsSync(addPath) || !fs.statSync(addPath).isDirectory()) {
         fs.mkdirSync(addPath)
-        console.log("Folder created...")
       }
     })
   } catch (error) {

@@ -18,12 +18,11 @@ const imageFilter = (req, file, cb) => {
   }
   cb("Please upload only images")
 }
+const avatar_path = __basedir + "/public/images/uploads/avatars"
 
-const avatar_path = __basedir + "/public/images/uploads/avatars/"
-makeDirectory(avatar_path)
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+var storage = multer.diskStorage({
+  destination: async (req, file, cb) => {
+    await makeDirectory(avatar_path)
     cb(null, avatar_path)
   },
   filename: (req, file, cb) => {
@@ -32,10 +31,10 @@ const storage = multer.diskStorage({
   },
 })
 
-const uploadFile = multer({
+var uploadFile = multer({
   storage: storage,
   limits: { fileSize: "1000000" }, //Limits the maximum file size to 1,000,000 bytes (1 megabyte).
   fileFilter: imageFilter,
 }).single("avatar")
 
-module.exports = { uploadFile }
+module.exports = {uploadFile}
