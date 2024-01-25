@@ -10,21 +10,28 @@ const {
 } = require("../components/functions")
 const userResource = require("../components/resources/user")
 
-
 /* GET home page. */
 router.get("/", async (req, res, next) => {
   res.send("respond with a resource", { title: "Home" })
 })
 
+router.get("/login", async (req, res, next) => {
+  if (res.locals.auth.user) {
+    return res.redirect("/")
+  }
+  res.render("layouts/main/login", { title: "Login" })
+})
+
 /* Login page */
 router.post("/login", async (req, res, next) => {
+  const { email, password } = req.body
+
   const validation_error = api_validate(req, res)
   if (validation_error) {
     res.status(422)
     return res.send({ errors: validation_error })
   }
 
-  const { email, password } = req.body
   const user = await User.findOne({ where: { email: email } })
 
   let errors = {}

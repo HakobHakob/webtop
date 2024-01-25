@@ -4,7 +4,7 @@ const uploadFilesToDB = async (path, fileName, fileData) => {
   try {
     let fullPath = __basedir + path
 
-    await makeDirectoryIfNotExists(fullPath)
+    await makeDirectory(fullPath)
     fs.writeFileSync(fullPath + fileName, fileData)
     return true
   } catch (error) {
@@ -13,7 +13,7 @@ const uploadFilesToDB = async (path, fileName, fileData) => {
   }
 }
 
-const makeDirectoryIfNotExists = async (path) => {
+const makeDirectory = async (path) => {
   let pathArr = path.split(/[/\\]/gi)
   try {
     let addPath = ""
@@ -29,4 +29,4 @@ const makeDirectoryIfNotExists = async (path) => {
   }
 }
 
-module.exports = { uploadFilesToDB, makeDirectoryIfNotExists }
+module.exports = { uploadFilesToDB, makeDirectory }

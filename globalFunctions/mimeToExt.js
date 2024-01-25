@@ -91,4 +91,4 @@ const extFromFileName = (fileName = "") => {
   return dotIndex > -1 ? fileName.slice(dotIndex) : ""
 }
 
-module.exports =  extFrom 
+module.exports = extFrom

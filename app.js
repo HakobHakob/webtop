@@ -1,10 +1,14 @@
-const createError = require("http-errors")
 const express = require("express")
+const app = express()
 const path = require("path")
 const cookieParser = require("cookie-parser")
 // const log = require("./logger/logger")
 const session = require("express-session")
 const bodyParser = require("body-parser")
+
+// For postman form-data
+const formData = require("express-form-data")
+const os = require("node:os")
 
 global.__basedir = __dirname
 
@@ -19,7 +23,6 @@ const {
   errorHandler,
 } = require("./middlewares/errorMiddleware")
 
-const app = express()
 
 // log.info("This is an information message.")
 
@@ -35,6 +38,8 @@ app.set("view engine", "ejs")
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(formData.parse({ uploadDir: os.tmpdir(), autoClean: true }))
+app.use(formData.union())
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, "public")))
 

@@ -1,14 +1,17 @@
 const multer = require("multer")
 const path = require("path")
 const { v4: uuidv4 } = require("uuid")
-const {
-  makeDirectoryIfNotExists,
-} = require("../../globalFunctions/globalFunctions")
+const { makeDirectory } = require("../../globalFunctions/globalFunctions")
+const extFrom = require("../../globalFunctions/mimeToExt")
 
 const imageFilter = (req, file, cb) => {
   const fileTypes = /jpeg|jpg|png|gif|webp/
   const mimetype = fileTypes.test(file.mimetype)
   const extname = fileTypes.test(path.extname(file.originalname))
+
+  /* For all types files*/
+  // const { mimetype, originalname } = file
+  // const extname = extFrom(mimetype, originalname)
 
   if (mimetype && extname) {
     return cb(null, true)
@@ -17,7 +20,7 @@ const imageFilter = (req, file, cb) => {
 }
 
 const avatar_path = __basedir + "/public/images/uploads/avatars/"
-makeDirectoryIfNotExists(avatar_path)
+makeDirectory(avatar_path)
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

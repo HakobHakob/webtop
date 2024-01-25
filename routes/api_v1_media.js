@@ -1,18 +1,20 @@
 const express = require("express")
 const router = express.Router()
 const fs = require("fs")
-const { Media } = require("../models")
-const mediaController = require("../controllers/mediaController/mediaController")
-const {
-  makeDirectoryIfNotExists,
-} = require("../globalFunctions/globalFunctions")
+const { Media, User } = require("../models")
+const { uploadFile } = require("../controllers/mediaController/mediaController")
+const { makeDirectory } = require("../globalFunctions/globalFunctions")
+const { authenticateUser } = require("../middlewares/authenticateUser ")
 
 router.get("/profile", async (req, res, next) => {
   res.status(422)
   return res.send({ errors: "Err" })
 })
 
-router.post("/profile", mediaController.uploadFile, async (req, res) => {
+router.post("/profile", uploadFile, async (req, res) => {
+  const { email } = req.body
+  const user = await User.findOne({ where: { email: email } })
+
   try {
     const file = req.file
     if (file === undefined) {
@@ -21,7 +23,7 @@ router.post("/profile", mediaController.uploadFile, async (req, res) => {
     const tmpAvatarPath = __basedir + "/public/images/uploads/tmp/"
     const uuidMatch = file.filename.match(/^([a-f\d]+(?:-[a-f\d]+)*)/i)
     let uuid = uuidMatch ? uuidMatch[1] : undefined
-    await makeDirectoryIfNotExists(tmpAvatarPath)
+    await makeDirectory(tmpAvatarPath)
 
     /**
      * fs.createReadStream to read the contents of the uploaded image file and fs.createWriteStream to write the contents to the destination folder. The pipe method is then used to efficiently transfer the data between the streams.
