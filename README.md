@@ -23,6 +23,7 @@ npm i express-fileupload
 npm i cors
 npm install cookie-parser
 npm i moment
+npm i nodemailer
 npm install --save multer
 npm i node-cron
 npm i joi

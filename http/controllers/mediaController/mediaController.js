@@ -1,8 +1,8 @@
 const multer = require("multer")
 const path = require("path")
 const { v4: uuidv4 } = require("uuid")
-const { makeDirectory } = require("../../globalFunctions/globalFunctions")
-const extFrom = require("../../globalFunctions/mimeToExt")
+const { makeDirectory } = require("../../../components/globalFunctions")
+const extFrom = require("../../../components/mimeToExt")
 
 const imageFilter = (req, file, cb) => {
   const fileTypes = /jpeg|jpg|png|gif|webp/
@@ -20,7 +20,7 @@ const imageFilter = (req, file, cb) => {
 }
 const avatar_path = __basedir + "/public/images/uploads/avatars"
 
-var storage = multer.diskStorage({
+const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
     await makeDirectory(avatar_path)
     cb(null, avatar_path)
@@ -31,7 +31,7 @@ var storage = multer.diskStorage({
   },
 })
 
-var uploadFile = multer({
+const uploadFile = multer({
   storage: storage,
   limits: { fileSize: "1000000" }, //Limits the maximum file size to 1,000,000 bytes (1 megabyte).
   fileFilter: imageFilter,

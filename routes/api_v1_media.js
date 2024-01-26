@@ -2,9 +2,8 @@ const express = require("express")
 const router = express.Router()
 const fs = require("fs")
 const { Media } = require("../models")
-const mediaController = require("../controllers/mediaController/mediaController")
-const { makeDirectory } = require("../globalFunctions/globalFunctions")
-// const uploadFile = require("../controllers/mediaController/mediaController")
+const mediaController = require("../http/controllers/mediaController/mediaController")
+const { makeDirectory } = require("../components/globalFunctions")
 
 router.get("/profile", async (req, res, next) => {
   res.render("layouts/main/profile", {

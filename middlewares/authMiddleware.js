@@ -1,6 +1,6 @@
 const { getWebAuth } = require("../components/functions")
 const { conf } = require("../config/app_config")
-const { translations } = require("../globalFunctions/translations")
+const { translations } = require("../components/translations")
 
 const authMiddleware = async (req, res, next) => {
   res.locals.auth = await getWebAuth(req, res)

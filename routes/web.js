@@ -6,7 +6,7 @@ const { loginUser, logoutUser } = require("../components/functions")
 const { validate } = require("../components/validate")
 //import controllers media
 const sharp = require("sharp")
-const mediaController = require("../controllers/mediaController/mediaController")
+const mediaController = require("../http/controllers/mediaController/mediaController")
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {

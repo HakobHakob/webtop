@@ -8,7 +8,7 @@ const {
   saveAndGetUserToken,
   apiLogoutUser,
 } = require("../components/functions")
-const userResource = require("../components/resources/user")
+const userResource = require("../http/resources/userResource")
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {

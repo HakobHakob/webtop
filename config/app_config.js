@@ -2,12 +2,11 @@ const conf = {
   /*token cookie*/
   token: {
     table: "tokens",
-    prefix: "_t_ses",
     delimiter: "'",
     maxAge: 2 * 60 * 60 * 1000, // Stay logged in 2 * 60 * 60 * 1000 /two/ hours after last navigation
-    re_save: true,
-    refresh: true,
-    refresh_timeout: 5 * 60 * 1000, //Refresh token every  5 minutes
+    // re_save: true,
+    // refresh: true,
+    // refresh_timeout: 5 * 60 * 1000, //Refresh token every  5 minutes
   },
 
   api: {
@@ -30,6 +29,19 @@ const conf = {
   lang: {
     default: "hy",
     all: { hy: "Հայերեն", en: "English", ru: "Русский" },
+  },
+  mail: {
+    transporter: {
+      host: process.env.MAIL_HOST,
+      port: process.env.MAIL_PORT,
+      // secure: true,
+      secureConnection: false, // TLS requires secureConnection to be false
+      auth: {
+        user: process.env.MAIL_USERNAME,
+        pass: process.env.MAIL_PASSWORD,
+      },
+    },
+    from: process.env.MAIL_FROM_ADDRESS,
   },
 }
 

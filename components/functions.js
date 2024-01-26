@@ -2,9 +2,7 @@ const bcrypt = require("bcrypt")
 const { User } = require("../models")
 const { conf } = require("../config/app_config")
 const db = require("../models")
-const { Op } = require("sequelize")
 const { boolean } = require("joi")
-const fs = require("node:fs")
 const queryInterface = db.sequelize.getQueryInterface()
 
 const getTokenData = async (userId, role, token) => {
@@ -119,6 +117,16 @@ const getWebAuth = async (req, res) => {
   return authData
 }
 
+const generateString = (str_length = 8) => {
+  let str = ""
+  const symbols =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()@!?<>"
+  Array.from({ length: str_length }).forEach(() => {
+    str += words[Math.floor(Math.random() * words.length)]
+  })
+  return str
+}
+
 const generateToken = (userId, role, tokenLength = 128) => {
   const symbols =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()@!?<>"
@@ -144,8 +152,8 @@ const generateToken = (userId, role, tokenLength = 128) => {
     token += symbols[Math.floor(Math.random() * symbols.length)]
   })
   const hashedToken = bcrypt.hashSync(token, 8)
-  
-  return {token, hashedToken}
+
+  return { token, hashedToken }
 }
 
 const saveAndGetUserToken = async (userId, role = "user") => {
@@ -228,10 +236,11 @@ const apiLogoutUser = async (userId, role, req, res) => {
 }
 
 module.exports = {
-  getApiAuth,//
-  getWebAuth,//
-  saveAndGetUserToken,//
-  loginUser,//
-  logoutUser,//
-  apiLogoutUser,//
+  getApiAuth,
+  getWebAuth,
+  saveAndGetUserToken,
+  loginUser,
+  logoutUser,
+  apiLogoutUser,
+  generateString,
 }
