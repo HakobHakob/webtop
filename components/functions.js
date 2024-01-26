@@ -144,7 +144,8 @@ const generateToken = (userId, role, tokenLength = 128) => {
     token += symbols[Math.floor(Math.random() * symbols.length)]
   })
   const hashedToken = bcrypt.hashSync(token, 8)
-  return [token, hashedToken]
+  
+  return {token, hashedToken}
 }
 
 const saveAndGetUserToken = async (userId, role = "user") => {

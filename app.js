@@ -10,6 +10,11 @@ const webRouter = require("./routes/web")
 const apiRouter = require("./routes/api_v1")
 const mediaRouter = require("./routes/api_v1_media")
 
+// For postman form-data
+// const formData = require("express-form-data")
+// const os = require("node:os")
+
+
 const authMiddleware = require("./middlewares/authMiddleware")
 const api_auth = require("./middlewares/api_auth")
 const {
@@ -35,6 +40,8 @@ app.set("view engine", "ejs")
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+// app.use(formData.parse({ uploadDir: os.tmpdir(), autoClean: true }))
+// app.use(formData.union())
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, "public")))
 
