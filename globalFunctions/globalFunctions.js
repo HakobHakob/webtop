@@ -1,17 +1,5 @@
 const fs = require("fs")
-
-const uploadFilesToDB = async (path, fileName, fileData) => {
-  try {
-    let fullPath = __basedir + path
-
-    await makeDirectory(fullPath)
-    fs.writeFileSync(fullPath + fileName, fileData)
-    return true
-  } catch (error) {
-    console.log(error)
-    return false
-  }
-}
+const { translations } = require("./translations")
 
 const makeDirectory = async (path) => {
   let pathArr = path.split(/[/\\]/gi)
@@ -28,4 +16,10 @@ const makeDirectory = async (path) => {
   }
 }
 
-module.exports = { uploadFilesToDB, makeDirectory }
+global.translate = (word, language) => {
+  return word in translations && language in translations[word]
+    ? translations[word][language]
+    : word
+}
+
+module.exports = { makeDirectory, translate: global.translate }

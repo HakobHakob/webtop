@@ -62,7 +62,6 @@ router.post("/login", async (req, res, next) => {
 
 /*GET login page*/
 router.get("/about", async (req, res, next) => {
-  console.log("global.__basedir = __dirname >>>>>", __dirname)
   res.render("layouts/main/about", { title: "Login" })
 })
 
@@ -115,7 +114,7 @@ router.get("/profile", async (req, res, next) => {
 //  try {
 //   const file = req.file
 //  } catch (error) {
-  
+
 //  }
 
 // })

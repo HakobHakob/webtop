@@ -19,6 +19,7 @@ npm i mysql2
 npm i express-form-data
 npm i express-session
 npm i express-validator
+npm i express-fileupload
 npm i cors
 npm install cookie-parser
 npm i moment

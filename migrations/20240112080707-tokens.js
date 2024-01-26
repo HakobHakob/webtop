@@ -4,7 +4,7 @@ const { conf } = require("../config/app_config")
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("tokens", {
+    await queryInterface.createTable(conf.token.table, {
       user_id: {
         // allowNull default is true
         allowNull: false,
@@ -34,6 +34,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable(conf.cookie.ses_table_name)
+    await queryInterface.dropTable(conf.token.table)
   },
 }

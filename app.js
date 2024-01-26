@@ -18,6 +18,11 @@ const {
 } = require("./middlewares/errorMiddleware")
 // log.info("This is an information message.")
 
+//---------------------cron jobs-begin---------------------------------------------
+require("./jobs/sessionCleaner")
+require("./jobs/logFileCleaner")
+//---------------------cron jobs-end-----------------------------------------------
+
 // configure our .env file
 const dotenv = require("dotenv")
 dotenv.config({ path: "./.env" })
@@ -32,6 +37,20 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, "public")))
+
+// File upload configs
+/*
+const fileUpload = require("express-fileupload")
+app.use(
+  fileUpload({
+    limits: { fileSize: 50 * 1024 * 1024 },
+    useTempFiles: true,
+    tempFileDir: __dirname + "/tmp",
+    safeFileNames: true,
+    preserveExtension: true,
+  })
+)
+ */
 
 app.use(
   session({

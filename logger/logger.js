@@ -1,6 +1,7 @@
 const winston = require("winston")
 const moment = require("moment")
 const cron = require("node-cron")
+const { conf } = require("../config/app_config")
 
 let log = null
 
@@ -10,7 +11,7 @@ const makeLog = () => {
     level: "info",
     format: winston.format.simple(),
     transports: [
-      new winston.transports.File({ filename: "logs/" + now + ".log" }), // output to file
+      new winston.transports.File({filename: conf.log.path + '/' + now + conf.log.ext}) // вывод в файл
     ],
   })
 }

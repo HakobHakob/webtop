@@ -1,17 +1,18 @@
-const { getUserByToken } = require("../components/functions")
+const { getApiAuth } = require("../components/functions")
+const { conf } = require("../config/app_config")
 
 const api_auth = async (req, res, next) => {
   const BEARER_PREFIX = "Bearer "
   res.locals.api_auth = {}
-  let bearer_token = req.headers.authorization
-  bearer_token =
-    bearer_token && bearer_token.startsWith(BEARER_PREFIX)
-      ? bearer_token.slice(BEARER_PREFIX.length)
-      : null
-  const [role, userId, auth] = await getUserByToken(bearer_token, req, res)
-  if (userId && role && auth) {
-    res.locals.api_auth[role] = auth
+  res.locals.api_new_token = null
+  let authData = await getApiAuth(req, res)
+
+  if (authData) {
+    res.locals.api_auth[authData.role] = authData.auth
+    res.locals.api_new_token = authData.newToken
   }
+  res.locals.api_local =
+    req.headers["accept-language"] ?? conf.lang.default ?? null
   next()
 }
 module.exports = api_auth
