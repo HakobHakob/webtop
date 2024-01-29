@@ -9,6 +9,7 @@ const {
   apiLogoutUser,
 } = require("../components/functions")
 const userResource = require("../http/resources/userResource")
+const { userNotification } = require("../http/notifications/userNotification")
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {
@@ -29,7 +30,7 @@ router.post("/login", async (req, res, next) => {
     res.status(422)
     return res.send({ errors: validation_error })
   }
-  
+
   const { email, password } = req.body
   const user = await User.findOne({ where: { email: email } })
 
@@ -76,6 +77,29 @@ router.get("/logout", async (req, res, next) => {
   }
   res.status(422)
   return res.send({ errors: "Not logged out." })
+})
+
+// Post request to send an email
+router.post("/sendmail", async (req, res) => {
+  const result = await userNotification(
+    req.body.email,
+    "subject",
+    "message",
+    "text"
+  )
+  try {
+    // send the response
+    res.json({
+      status: true,
+      payload: result,
+    })
+  } catch (error) {
+    console.error(error.message)
+    res.json({
+      status: false,
+      payload: "Something went wrong in Sendmail Route.",
+    })
+  }
 })
 
 module.exports = router

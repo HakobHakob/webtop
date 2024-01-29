@@ -1,3 +1,6 @@
+require("dotenv").config()
+
+
 const conf = {
   /*token cookie*/
   token: {
