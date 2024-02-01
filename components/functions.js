@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt")
 const { User } = require("../models")
-const { conf } = require("../config/app_config")
 const db = require("../models")
 const { boolean } = require("joi")
+const { conf } = require("../config/app_config")
 const queryInterface = db.sequelize.getQueryInterface()
 
 const getTokenData = async (userId, role, token) => {
@@ -63,8 +63,8 @@ const getApiAuth = async (req, res) => {
 
 const getWebAuth = async (req, res) => {
   let authData = {}
-  for (let key in req.cookies) {
-    if (key.startsWith(conf.web.prefix + conf.token.delimiter)) {
+  for (let key in req.cookies) {  
+    if (key.startsWith(conf.web.prefix + conf.token.delimiter)) {     
       let sesToken = req.cookies[key]
       let [userId, role] = sesToken
         ? sesToken.split(conf.token.delimiter)
@@ -122,7 +122,7 @@ const generateString = (str_length = 8) => {
   const symbols =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()@!?<>"
   Array.from({ length: str_length }).forEach(() => {
-    str += words[Math.floor(Math.random() * words.length)]
+    str += symbols[Math.floor(Math.random() * symbols.length)]
   })
   return str
 }

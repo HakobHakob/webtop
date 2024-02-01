@@ -1,53 +1,321 @@
-const winston = require('winston');
-const moment = require("moment/moment");
-const cron = require("node-cron");
-const {conf} = require('../config/app_config');
+const mysql = require("mysql")
+const mysql_sync = require("sync-mysql")
+require("dotenv").config()
+const { conf } = require("../config/app_config")
 
-let log = null;
-const makeLog = () => {
-    let now = moment().format(conf.log.format);
-    log = winston.createLogger({
-        level: 'info', // уровень логирования
-        format: winston.format.simple(), // формат вывода
-        transports: [
-            // new winston.transports.Console(), // вывод в консоль
-            new winston.transports.File({filename: conf.log.path + '/' + now + conf.log.ext}) // вывод в файл
-        ]
-    });
-    global.log = log;
-};
-makeLog();
-cron.schedule('0 0 * * *', () => {//running every day at 0:00
-    makeLog();
-    // console.log('cron running at ' + moment().format('yyyy_MM_DD-HH:mm:ss'));
-});
-// log.info('Info message.');
-// log.warn('Warning message.');
-// log.error('Error message.');
-// let processEvents = ['beforeExit', 'disconnect', 'exit', 'rejectionHandled', 'uncaughtException',
-//   'uncaughtExceptionMonitor', 'unhandledRejection', 'warning', 'message'];
-let errProcessEvents = ['uncaughtException', 'uncaughtExceptionMonitor'];
-// process.on('uncaughtException', (err) => {
-//     log.error(moment().format('yyyy_MM_DD-HH:mm:ss') + '\n' + err.stack + '\n\n');
-//     process.exit(1);
-// });
-errProcessEvents.forEach((errProcessEvent) => {
-    process.on(errProcessEvent, (err) => {
-        log.error(moment().format('yyyy_MM_DD-HH:mm:ss') + '\n' + err.stack + '\n\n');
-        process.exit(1);
-    });
-});
-process.on('warning', (err) => {
-    log.error(moment().format('yyyy_MM_DD-HH:mm:ss') + '\n' + err.stack + '\n\n');
-});
-// process.stdout.wr = process.stdout.write;
-process.stdout.er = process.stderr.write;
-process.stderr.write = (mes, c) => {
-    log.error(moment().format('yyyy_MM_DD-HH:mm:ss') + '\n' + mes + '\n\n');
-    process.stdout.er(mes, c);
+const _val = (value) => {
+  return value === null
+    ? "NULL"
+    : typeof value === "boolean"
+    ? value
+      ? 1
+      : 0
+    : value === undefined
+    ? ""
+    : "'" + value + "'"
 }
-process.on('exit', (code) => {
-  // console.log(`Процесс завершен с кодом: ${code}`);
-  log.error(moment().format('yyyy_MM_DD-HH:mm:ss') + '\nExit with code: ' + code + '\n\n');
-  // process.exit(1);
-});
+
+const _col = (column) => {
+  return "`" + column + "`"
+}
+
+
+
+const executeQuery = (query) => {
+  const mode = process.env.NODE_ENV ?? "production"
+  const config = conf.database[mode]
+
+  return new Promise((resolve, reject) => {
+    let connection = mysql.createConnection(config)
+    connection.connect((error) => {
+      if (error) {
+        reject(error)
+      }
+      connection.query(query, (error, result) => {
+        error ? reject(error) : resolve(result)
+      })
+    })
+  })
+}
+
+/* 
+* const DB = (query) => {
+  try {
+    const connection = new mysql_sync({
+      host: "localhost",
+      user: "root",
+      port: 3306,
+      password: "",
+      database: "webtop_db",
+    })
+    return connection.query(query)
+  } catch (error) {
+    return { error }
+  }
+}
+
+const products = DB("SELECT * FROM products LIMIT 3")
+console.log("products", products)
+
+*/
+
+const createQueryBuilder = (table) => {
+  return {
+    _tableName: table,
+    _table: _col(table),
+    _r_table: null,
+    _table_r: null,
+    _conditions: [],
+    _orders: [],
+    _limit: null,
+    _paginate: null,
+    _add_to_end: null,
+  }
+}
+
+const DB = (table) => {
+  //"SELECT * FROM products WHERE disable = 0 LIMIT 10"
+  let {
+    _table,
+    _r_table,
+    _table_r,
+    _conditions,
+    _orders,
+    _limit,
+    _paginate,
+    _add_to_end,
+  } = createQueryBuilder(table)
+
+  const where = (column, conditionOrValue, value) => {
+    if (arguments.length < 2) {
+      return
+    }
+    if (arguments.length < 3) {
+      _conditions.push("AND", _col(column), "=", _val(conditionOrValue))
+    } else {
+      _conditions.push("AND", _col(column), conditionOrValue, _val(value))
+    }
+  }
+
+  const whereNotNull = (column) => {}
+
+  const orWhere = (column, conditionOrValue, value) => {
+    if (arguments.length < 2) {
+      return
+    }
+    if (arguments.length < 3) {
+      _conditions.push("OR", _col(column), "=", _val(conditionOrValue))
+    } else {
+      _conditions.push("OR", _col(column), conditionOrValue, _val(value))
+    }
+  }
+
+  const whereIn = (column, arr) => {
+    if (arguments.length < 2 || !Array.isArray(arr)) {
+      return
+    }
+    arr = arr.map((ar) => _val(ar))
+    _conditions.push("AND", _col(column), "IN(", arr.join(", ") + ")")
+  }
+
+  const orWhereIn = (column, arr) => {
+    if (arguments.length < 2 || !Array.isArray(arr)) {
+      return
+    }
+    arr = arr.map((ar) => _val(ar))
+    _conditions.push("OR", _col(column), "IN(", arr.join(", ") + ")")
+  }
+
+  const orderBy = (column, ascOrDesc = "ASC") => {
+    if (
+      arguments.length < 2 ||
+      (ascOrDesc.toUpperCase() !== "ASC" && ascOrDesc.toUpperCase() !== "DESC")
+    ) {
+      return
+    }
+    _orders.push(_col(column) + " " + ascOrDesc.toUpperCase())
+  }
+
+  const limit = (limitValue) => {
+    if (limitValue !== undefined) {
+      _limit = limitValue
+    }
+  }
+
+  const paginate = (page, perPage) => {
+    if (page && perPage) {
+      _paginate = { page, perPage }
+    }
+  }
+
+  const whereHas = (relation, fn) => {
+    // let query = this
+    // fn(query)
+  }
+
+  const orWhereHas = () => {}
+
+  const get = (columns = "*") => {
+    if (Array.isArray(columns)) {
+      columns = columns.map((col) => _col(col)).join(", ")
+    }
+    _r_table = "SELECT " + columns + " FROM"
+    return _queryBuilder()
+  }
+
+  const deleteRecord = () => {
+    _r_table = "DELETE FROM"
+    return _queryBuilder()
+  }
+
+  const update = (obj = {}) => {
+    _r_table = "UPDATE"
+    _table_r = "SET"
+    let set = []
+    if (
+      typeof obj === "object" &&
+      obj !== null &&
+      Object.keys(obj).length > 0
+    ) {
+      for (let column in obj) {
+        set.push(_col(column) + " = " + _val(obj[column]))
+      }
+      _table_r = "SET " + set.join(", ")
+    }
+    return _queryBuilder()
+  }
+
+  const create = (obj = {}) => {
+    _r_table = "INSERT INTO"
+    if (Array.isArray(obj) && obj.length > 0) {
+      let columns = []
+      let all_values = []
+      for (let column in obj[0]) {
+        columns.push(column)
+      }
+      obj.forEach((objItem) => {
+        let values = []
+        columns.forEach((column) => {
+          values.push(_val(objItem[column]))
+        })
+        all_values.push("(" + values.join(", ") + ")")
+      })
+      _table_r = "(" + columns.join(", ") + ") VALUES " + all_values.join(", ")
+    } else if (
+      typeof obj === "object" &&
+      obj !== null &&
+      Object.keys(obj).length > 0
+    ) {
+      let columns = []
+      let values = []
+      for (let column in obj) {
+        columns.push(_col(column))
+        values.push(_val(obj[column]))
+      }
+      _table_r =
+        "(" +
+        columns.map((column) => _col(column)).join(", ") +
+        ") VALUES (" +
+        values.join(", ") +
+        ")"
+    }
+    return _queryBuilder()
+  }
+
+  const find = async (id, columns = "*") => {
+    if (Array.isArray(columns)) {
+      columns = columns.map((col) => _col(col)).join(", ")
+    }
+    _r_table = "SELECT " + columns + " FROM"
+    _limit = 1
+    if (arguments.length > 0 && id !== undefined && isFinite(id)) {
+      _conditions.push("AND", _col("id"), "=", _val(id))
+    }
+    let answer = await _queryBuilder()
+    return answer.length > 0 ? answer[0] : null
+  }
+
+  const first = async (columns = "*") => {
+    if (Array.isArray(columns)) {
+      columns = columns.map((col) => _col(col)).join(", ")
+    }
+    _r_table = "SELECT " + columns + " FROM"
+    _limit = 1
+    let answer = await _queryBuilder()
+    return answer.length > 0 ? answer[0] : null
+  }
+
+  const count = async () => {
+    _r_table = "SELECT COUNT(*) FROM"
+    let answer = await _queryBuilder()
+    return answer[0][Object.keys(answer[0])[0]]
+  }
+
+  const exists = async () => {
+    _r_table = "SELECT EXISTS (SELECT * FROM"
+    _add_to_end = ")"
+    let answer = await _queryBuilder()
+    return answer[0][Object.keys(answer[0])[0]] !== 0
+  }
+
+  const sum = async (column) => {
+    _r_table = "SELECT SUM(" + _col(column) + ") FROM"
+    let answer = await _queryBuilder()
+    return answer[0][Object.keys(answer[0])[0]]
+  }
+
+  const truncate = () => {
+    _r_table = "TRUNCATE TABLE"
+    return _queryBuilder()
+  }
+
+  const _queryBuilder = () => {
+    let queryComponents = [_r_table, _table]
+    _table_r !== null ? queryComponents.push(_table_r) : null
+    if (_conditions.length > 0) {
+      _conditions[0] = "WHERE"
+      queryComponents.push(..._conditions)
+    }
+    if (_orders.length > 0) {
+      queryComponents.push("ORDER BY")
+      queryComponents.push(_orders.join(", "))
+    }
+    if (_limit !== null) {
+      queryComponents.push("LIMIT " + _limit)
+    } else if (_paginate !== null) {
+      queryComponents.push("LIMIT " + _paginate.perPage)
+    }
+    if (_paginate !== null) {
+      queryComponents.push("OFFSET " + _paginate.perPage * (_paginate.page - 1))
+    }
+    _add_to_end !== null ? queryComponents.push(_add_to_end) : null
+    let query = queryComponents.join(" ")
+    console.log("query =", query)
+    return executeQuery(query)
+  }
+
+  return {
+    where,
+    whereNotNull,
+    orWhere,
+    whereIn,
+    orWhereIn,
+    orderBy,
+    limit,
+    paginate,
+    whereHas,
+    orWhereHas,
+    get,
+    delete: deleteRecord,
+    update,
+    create,
+    find,
+    first,
+    count,
+    exists,
+    sum,
+    truncate,
+  }
+}
+
+module.exports = { executeQuery, DB }

@@ -6,10 +6,23 @@
   <h2>Registration</h2>
   <p>To register, enter:</p>
 
-  <input type="text" placeholder="username " name="username" required />
-  <input type="text" placeholder="userlastname " name="userlastname" required />
+  <input type="text" placeholder="username " name="firstName" required />
+  <% if(locals.errors && "firstName" in locals.errors) { %>
+  <div class="error-div"><%= locals.errors.firstName %></div>
+  <% } %>
+
+  <input type="text" placeholder="userlastname " name="lastName" required />
+  <% if(locals.errors && "lastName" in locals.errors) { %>
+  <div class="error-div"><%= locals.errors.lastName %></div>
+  <% } %>
   <input type="email" placeholder="email " name="email" required />
+  <% if(locals.errors && "email" in locals.errors) { %>
+  <div class="error-div"><%= locals.errors.email %></div>
+  <% } %>
   <input type="password" placeholder="password" name="password" required />
+  <% if(locals.errors && "password" in locals.errors) { %>
+  <div class="error-div"><%= locals.errors.password %></div>
+  <% } %>
 
   <button type="submit" class="login-btn">Register</button>
 </form>

@@ -6,6 +6,9 @@ const cookieParser = require("cookie-parser")
 const session = require("express-session")
 const bodyParser = require("body-parser") //To access the parameters passed with API request
 const cors = require("cors") //To handle the cross origin resource sharing
+// configure our .env file
+require("dotenv").config() //is used to load the .env file, so that using process.env.{KEY} we can access the environment variables defined in the .env file. */
+
 global.__basedir = __dirname
 const webRouter = require("./routes/web")
 const apiRouter = require("./routes/api_v1")
@@ -14,6 +17,8 @@ const mediaRouter = require("./routes/api_v1_media")
 // For postman form-data
 // const formData = require("express-form-data")
 // const os = require("node:os")
+// app.use(formData.parse({ uploadDir: os.tmpdir(), autoClean: true }))
+// app.use(formData.union())
 
 const authMiddleware = require("./middlewares/authMiddleware")
 const api_auth = require("./middlewares/api_auth")
@@ -28,9 +33,6 @@ require("./jobs/sessionCleaner")
 require("./jobs/logFileCleaner")
 //---------------------cron jobs-end-----------------------------------------------
 
-// configure our .env file
-require("dotenv").config() //is used to load the .env file, so that using process.env.{KEY} we can access the environment variables defined in the .env file. */
-
 // Install ejs
 app.use(require("express-ejs-layouts"))
 app.set("layout", "layouts/includes/contentTemplate")
@@ -39,8 +41,7 @@ app.set("view engine", "ejs")
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
-// app.use(formData.parse({ uploadDir: os.tmpdir(), autoClean: true }))
-// app.use(formData.union())
+
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname, "public")))
 
@@ -68,15 +69,15 @@ app.use(
 )
 
 // Express body parser
-app.use(cors())
+// app.use(cors())
 app.use(bodyParser.json())
-app.use(
-  bodyParser.urlencoded({
-    limit: "50mb",
-    extended: false,
-    parameterLimit: 50000,
-  })
-)
+// app.use(
+//   bodyParser.urlencoded({
+//     limit: "50mb",
+//     extended: false,
+//     parameterLimit: 50000,
+//   })
+// )
 
 app.use(authMiddleware)
 app.use(api_auth)

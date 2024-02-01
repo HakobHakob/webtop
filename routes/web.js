@@ -3,10 +3,17 @@ const router = express.Router()
 const bcrypt = require("bcrypt")
 const { User } = require("../models")
 const { loginUser, logoutUser } = require("../components/functions")
-const { validate } = require("../components/validate")
+const {
+  api_validate,
+  registrationSchema,
+  loginScheme,
+} = require("../components/validate")
 //import controllers media
 const sharp = require("sharp")
 const mediaController = require("../http/controllers/mediaController/mediaController")
+const { apiErrors } = require("../components/util")
+const { register } = require("../http/controllers/admin/userController")
+const { userNotification } = require("../http/notifications/userNotification")
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {
@@ -27,21 +34,26 @@ router.get("/login", async (req, res, next) => {
 router.post("/login", async (req, res, next) => {
   req.session.errors = req.session.errors || {}
 
-  if (res.locals.auth.user) {
-    return res.redirect("/")
-  }
-
-  const validation_error = validate(req, res)
-  if (!validation_error) {
+  const scheme = loginScheme()
+  const validation_error = api_validate(scheme, req, res)
+  if (validation_error) {
+    for (const errKey in apiErrors) {
+      for (const valid_err_key in validation_error) {
+        if (errKey === valid_err_key) {
+          req.session.errors[errKey] = apiErrors[errKey]
+        }
+      }
+    }
+    res.status(422)
     return res.redirectBack()
   }
 
   const { email, password } = req.body
-
   const user = await User.findOne({ where: { email: email } })
 
   if (!user) {
     req.session.errors["email"] = "Invalid email !!!"
+    res.status(422)
     return res.redirectBack()
   }
 
@@ -50,13 +62,14 @@ router.post("/login", async (req, res, next) => {
 
   if (!isValid) {
     req.session.errors["password"] = "Invalid password !!!"
+    res.status(422)
     return res.redirectBack()
   }
-
   const { id } = user.dataValues
   await loginUser(id, req, res, "user")
   await loginUser(id, req, res, "admin")
 
+  res.status(200)
   res.redirect("/")
 })
 
@@ -72,26 +85,55 @@ router.get("/register", async (req, res, next) => {
 
 /* POST register page */
 router.post("/register", async (req, res, next) => {
-  try {
-    const { username, userlastname, email, password } = req.body
+  req.session.errors = req.session.errors || {}
+  const schema = registrationSchema()
+  const validation_error = api_validate(schema, req, res)
 
-    User.create({
-      firstName: username,
-      lastName: userlastname,
-      email: email,
-      password: password,
-      role: "admin",
-      emailVerifyedAt: new Date(),
-    })
+  if (validation_error) {
+    for (const errKey in errors) {
+      for (const valid_err_key in validation_error) {
+        if (errKey === valid_err_key) {
+          req.session.errors[errKey] = errors[errKey]
+        }
+      }
+    }
 
-    // Go to page , that you want. For example home
-    res.render("layouts/main/home", {
-      title: "Express",
-    })
-  } catch (err) {
-    console.error("Error fetching users:", err)
-    next(err)
+    res.status(422)
+    return res.redirectBack()
   }
+
+  let message = null,
+    generatedPassword = null
+  if (!req.body.role) {
+    req.body.role = "admin"
+  }
+  if (!req.body.password) {
+    generatedPassword = req.body.password = generateString(10)
+    message = "User password generated automatically, it send to email."
+  }
+
+  const { firstName, lastName, email, password } = req.body
+
+  User.create({
+    firstName: firstName,
+    lastName: lastName,
+    email: email,
+    password: password,
+    role: "admin",
+    emailVerifyedAt: new Date(),
+  })
+
+  await userNotification(
+    email,
+    "User created",
+    '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' +
+      password +
+      "</div>",
+    "html"
+  )
+
+  // Go to page , that you want. For example home
+  res.redirectBack()
 })
 
 router.get("/logout", async (req, res, next) => {

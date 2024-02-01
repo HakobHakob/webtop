@@ -1,6 +1,5 @@
 require("dotenv").config()
 
-
 const conf = {
   /*token cookie*/
   token: {
@@ -18,7 +17,7 @@ const conf = {
     refreshTime: 5 * 60 * 1000,
   },
   web: {
-    prefix: "_t_ses",
+    prefix: "ses",
     renewal: true, //if true: last request time add maxAge to token expire.
     refresh: true, //if true: refresh token every refreshTime.
     refreshTime: 5 * 60 * 1000,
@@ -45,6 +44,29 @@ const conf = {
       },
     },
     from: process.env.MAIL_FROM_ADDRESS,
+  },
+  database: {
+    development: {
+      host: process.env.DEV_HOST ?? "localhost",
+      user: process.env.DEV_DB_USER ?? "root",
+      port: process.env.DEV_DB_PORT ?? 3306,
+      password: process.env.DEV_DB_PASS ?? "",
+      database: process.env.DEV_DB ?? "webtop_db",
+    },
+    test: {
+      host: process.env.TEST_HOST ?? "localhost",
+      user: process.env.TEST_DB_USER ?? "root",
+      port: process.env.TEST_DB_PORT ?? 3306,
+      password: process.env.TEST_DB_PASS ?? "",
+      database: process.env.TEST_DB ?? "webtop_db_test",
+    },
+    production: {
+      host: process.env.PROD_HOST ?? "localhost",
+      user: process.env.PROD_DB_USER ?? "root",
+      port: process.env.PROD_DB_PORT ?? 3306,
+      password: process.env.PROD_DB_PASS ?? "",
+      database: process.env.PROD_DB ?? "webtop_db",
+    },
   },
 }
 

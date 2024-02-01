@@ -21,6 +21,12 @@ input {
     border: 1px solid rgb(0, 208, 255);
   }
 }
+.error-div {
+  font-size: 15px;
+  font-style: italic;
+  color: red;
+  margin-bottom: 0.5rem;
+}
 
 button {
   cursor: pointer;
