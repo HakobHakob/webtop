@@ -51,6 +51,7 @@ npx sequelize-cli db:migrate:undo:all --to XXXXXXXXXXXXXX-create-user.js
 
 ```
 npx sequelize-cli seed:generate --name products-seeder
+npx sequelize-cli db:seed --seed <seed-file-name>
 npx sequelize-cli db:seed:all
 npx sequelize-cli db:seed:undo
 npx sequelize-cli db:seed:undo --seed name-of-seed-as-in-data

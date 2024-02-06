@@ -1,5 +1,6 @@
 const multer = require("multer")
 const path = require("path")
+const fs = require("fs")
 const { v4: uuidv4 } = require("uuid")
 const { makeDirectory } = require("../../../components/globalFunctions")
 const extFrom = require("../../../components/mimeToExt")
@@ -9,7 +10,7 @@ const imageFilter = (req, file, cb) => {
   const mimetype = fileTypes.test(file.mimetype)
   const extname = fileTypes.test(path.extname(file.originalname))
 
-  /* For all types files*/
+  /* For all types of files*/
   // const { mimetype, originalname } = file
   // const extname = extFrom(mimetype, originalname)
 
@@ -18,11 +19,13 @@ const imageFilter = (req, file, cb) => {
   }
   cb("Please upload only images")
 }
-const avatar_path = __basedir + "/public/images/uploads/avatars"
 
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
-    await makeDirectory(avatar_path)
+  destination: (req, file, cb) => {
+    const avatar_path =
+      __basedir + "/public/images/uploads/" + `${file.fieldname}`
+
+    makeDirectory(avatar_path)
     cb(null, avatar_path)
   },
   filename: (req, file, cb) => {
@@ -32,9 +35,21 @@ const storage = multer.diskStorage({
 })
 
 const uploadFile = multer({
-  storage: storage,
+  storage,
   limits: { fileSize: "1000000" }, //Limits the maximum file size to 1,000,000 bytes (1 megabyte).
   fileFilter: imageFilter,
-}).single("avatar")
+})
 
-module.exports = {uploadFile}
+const saveFileContent = (path, fileName, fileData) => {
+  try {
+    let fullPath = __basedir + "/public/images/" + path
+    makeDirectory(fullPath)
+    fs.writeFileSync(fullPath + "/" + fileName, fileData)
+    return true
+  } catch (error) {
+    console.error(error)
+    return false
+  }
+}
+
+module.exports = { uploadFile, saveFileContent }

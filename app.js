@@ -1,37 +1,34 @@
 const express = require("express")
 const app = express()
 const path = require("path")
+
+global.__basedir = __dirname
 const cookieParser = require("cookie-parser")
 // const log = require("./components/logger")
 const session = require("express-session")
 const bodyParser = require("body-parser") //To access the parameters passed with API request
-const cors = require("cors") //To handle the cross origin resource sharing
+
 // configure our .env file
 require("dotenv").config() //is used to load the .env file, so that using process.env.{KEY} we can access the environment variables defined in the .env file. */
 
-global.__basedir = __dirname
+app.use(bodyParser.json())
+app.use(
+  bodyParser.urlencoded({
+    limit: "50mb",
+    extended: true,
+    parameterLimit: 50000,
+  })
+)
 const webRouter = require("./routes/web")
 const apiRouter = require("./routes/api_v1")
-const mediaRouter = require("./routes/api_v1_media")
 
-// For postman form-data
-// const formData = require("express-form-data")
-// const os = require("node:os")
-// app.use(formData.parse({ uploadDir: os.tmpdir(), autoClean: true }))
-// app.use(formData.union())
-
-const authMiddleware = require("./middlewares/authMiddleware")
-const api_auth = require("./middlewares/api_auth")
 const {
   notFoundHandler,
   errorHandler,
 } = require("./middlewares/errorMiddleware")
 // log.info("This is an information message.")
-
-//---------------------cron jobs-begin---------------------------------------------
 require("./jobs/sessionCleaner")
 require("./jobs/logFileCleaner")
-//---------------------cron jobs-end-----------------------------------------------
 
 // Install ejs
 app.use(require("express-ejs-layouts"))
@@ -39,25 +36,19 @@ app.set("layout", "layouts/includes/contentTemplate")
 app.set("views", path.join(__dirname, "views"))
 app.set("view engine", "ejs")
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: false }))
-
-app.use(cookieParser())
-app.use(express.static(path.join(__dirname, "public")))
-
-// File upload configs
-
 const fileUpload = require("express-fileupload")
 app.use(
   fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
-    // useTempFiles: true,
-    // tempFileDir: __dirname + "/tmp",
+    // useTempFiles : true,
+    // tempFileDir : __dirname + '/tmp',
     // safeFileNames: true,
     // preserveExtension: true,
   })
 )
 
+app.use(cookieParser())
+app.use(express.static(path.join(__dirname, "public")))
 app.use(
   session({
     name: "ses",
@@ -68,23 +59,11 @@ app.use(
   })
 )
 
-// Express body parser
-// app.use(cors())
-app.use(bodyParser.json())
-// app.use(
-//   bodyParser.urlencoded({
-//     limit: "50mb",
-//     extended: false,
-//     parameterLimit: 50000,
-//   })
-// )
-
-app.use(authMiddleware)
-app.use(api_auth)
+app.use(require("./middlewares/authMiddleware"))
+app.use(require("./middlewares/api_auth"))
 
 app.use("/", webRouter)
 app.use("/api/v1", apiRouter)
-app.use("/api/v1/media", mediaRouter)
 
 // Use the error handling middleware
 app.use(notFoundHandler)

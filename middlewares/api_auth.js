@@ -6,9 +6,9 @@ const api_auth = async (req, res, next) => {
   res.locals.api_new_token = null
   const authData = await getApiAuth(req, res)
 
-  // console.log("authData>>>>>>>>>", authData)
-
   if (authData) {
+   
+
     res.locals.api_auth[authData.role] = authData.auth
     res.locals.api_new_token = authData.newToken
   }

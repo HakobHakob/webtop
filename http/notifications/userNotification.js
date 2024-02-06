@@ -1,7 +1,6 @@
 // https://schadokar.dev/posts/how-to-send-email-in-nodejs-with-expressjs/
 const nodemailer = require("nodemailer")
 const { conf } = require("../../config/app_config")
-const path = require("path")
 
 let transporter = nodemailer.createTransport(conf.mail.transporter)
 

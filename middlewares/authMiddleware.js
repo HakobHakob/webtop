@@ -72,14 +72,11 @@ const authMiddleware = async (req, res, next) => {
     }
   }
   //----------redirectBack----------------------------------
-
   let backURL = req.header("Referer") || req.url || "/"
   res.redirectBack = () => {
     return res.redirect(backURL)
   }
-
   res.locals.access_token = req.cookies.access_token || null
-
   next()
 }
 

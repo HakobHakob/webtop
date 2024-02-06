@@ -14,6 +14,8 @@ const mediaController = require("../http/controllers/mediaController/mediaContro
 const { apiErrors } = require("../components/util")
 const { register } = require("../http/controllers/admin/userController")
 const { userNotification } = require("../http/notifications/userNotification")
+const multer = require("multer")
+const upload = multer()
 
 /* GET home page. */
 router.get("/", async (req, res, next) => {
@@ -160,4 +162,26 @@ router.get("/profile", async (req, res, next) => {
 //  }
 
 // })
+
+/*GET portfolio page*/
+router.get("/portfolio", async (req, res, next) => {
+  res.render("layouts/main/portfolio", { title: "Portfolio" })
+})
+
+router.post("/portfolio", async (req, res) => {
+  try {
+    const file = req.file
+    if (file === undefined) {
+      return res.send("You must select a file.")
+    }
+    const tmpAvatarPath =
+      __basedir + "/public/images/uploads/" + `${file.fieldname}`
+    const uuidMatch = file.filename.match(/^([a-f\d]+(?:-[a-f\d]+)*)/i)
+    let uuid = uuidMatch ? uuidMatch[1] : undefined
+    makeDirectory(tmpAvatarPath)
+  } catch (error) {
+    console.log(error)
+    return res.send(`Error when trying upload images: ${error}`)
+  }
+})
 module.exports = router

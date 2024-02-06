@@ -2,7 +2,13 @@
 <link rel="stylesheet" href="/css/register.css" />
 
 <%- contentFor('content') %>
-<form action="/register" method="post" class="login-form">
+<!-- Don't forget the enctype="multipart/form-data" in your form. -->
+<form
+  action="/register"
+  method="post"
+  class="login-form"
+  enctype="multipart/form-data"
+>
   <h2>Registration</h2>
   <p>To register, enter:</p>
 

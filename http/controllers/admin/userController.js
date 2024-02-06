@@ -1,4 +1,3 @@
-const Joi = require("joi")
 const {
   api_validate,
   registrationSchema,
@@ -86,10 +85,10 @@ const register = async (req, res, next) => {
   const validation_error = api_validate(schema, req, res)
 
   if (validation_error) {
-    for (const errKey in errors) {
+    for (const errKey in apiErrors) {
       for (const valid_err_key in validation_error) {
         if (errKey === valid_err_key) {
-          req.session.errors[errKey] = errors[errKey]
+          req.session.errors[errKey] = apiErrors[errKey]
         }
       }
     }

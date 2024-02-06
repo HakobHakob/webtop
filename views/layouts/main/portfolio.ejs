@@ -1,0 +1,31 @@
+<%- contentFor('styles') %>
+<link rel="stylesheet" href="/css/portfolio.css" />
+
+<%- contentFor('content') %>
+
+<div class="home" id="content">
+  <h1>Portfolio</h1>
+  <p>Welcome to portfolio</p>
+
+  <form
+    action="/portfolio"
+    enctype="multipart/form-data"
+    method="post"
+    class="portfolio-form"
+  >
+    <div class="form-group">
+      <input type="file" class="form-control-file" name="uploaded_file" />
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Number of speakers"
+        name="nspeakers"
+      />
+      <input
+        type="submit"
+        value="Get me the stats!"
+        class="btn portfolio-btn"
+      />
+    </div>
+  </form>
+</div>
