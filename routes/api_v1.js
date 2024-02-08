@@ -3,7 +3,7 @@ const router = express.Router()
 const { v4: uuidv4 } = require("uuid")
 /**This middleware is typically used when you have a form that contains only textual fields and no file uploads. */
 // Use multer's upload.none() middleware for handling forms with no file uploads
-const mediaController = require("../http/controllers/mediaController/mediaController")
+// const mediaController = require("../http/controllers/mediaController/mediaController")
 
 const { userNotification } = require("../http/notifications/userNotification")
 const {
@@ -11,9 +11,9 @@ const {
   logOut,
   register,
 } = require("../http/controllers/admin/userController")
-
 const { Media } = require("../models")
 const extFrom = require("../components/mimeToExt")
+const { saveFileContentToPublic } = require("../components/globalFunctions")
 
 // Group middlewares
 
@@ -117,7 +117,7 @@ router.post("/profile", async (req, res) => {
     const fileName = uuidv4()
     const extension = extFrom(file.mimetype, file.name)
 
-    const uploadedFile = mediaController.saveFileContent(
+    const uploadedFile = saveFileContentToPublic(
       "uploads/avatars",
       fileName + extension,
       file.data

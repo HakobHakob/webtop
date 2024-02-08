@@ -2,8 +2,8 @@ const multer = require("multer")
 const path = require("path")
 const fs = require("fs")
 const { v4: uuidv4 } = require("uuid")
-const { makeDirectory } = require("../../../components/globalFunctions")
 const extFrom = require("../../../components/mimeToExt")
+const { makeDirectoryIfNotExists } = require("../../../components/functions")
 
 const imageFilter = (req, file, cb) => {
   const fileTypes = /jpeg|jpg|png|gif|webp/
@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
     const avatar_path =
       __basedir + "/public/images/uploads/" + `${file.fieldname}`
 
-    makeDirectory(avatar_path)
+      makeDirectoryIfNotExists(avatar_path)
     cb(null, avatar_path)
   },
   filename: (req, file, cb) => {
@@ -40,16 +40,6 @@ const uploadFile = multer({
   fileFilter: imageFilter,
 })
 
-const saveFileContent = (path, fileName, fileData) => {
-  try {
-    let fullPath = __basedir + "/public/images/" + path
-    makeDirectory(fullPath)
-    fs.writeFileSync(fullPath + "/" + fileName, fileData)
-    return true
-  } catch (error) {
-    console.error(error)
-    return false
-  }
-}
 
-module.exports = { uploadFile, saveFileContent }
+
+module.exports = { uploadFile }

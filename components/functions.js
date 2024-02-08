@@ -237,7 +237,7 @@ const apiLogoutUser = async (userId, role, req, res) => {
   return false
 }
 
-const makeDirectoryIfNotExists = (path) => {
+const makeDirectoryIfNotExists = async (path) => {
   let pathArr = path.split(/[/\\]/gi)
   try {
     let addPath = ""
@@ -247,22 +247,22 @@ const makeDirectoryIfNotExists = (path) => {
         fs.mkdirSync(addPath)
       }
     })
-  } catch (e) {
-    console.error(e)
+  } catch (error) {
+    console.error(error)
   }
 }
 
-const saveFileContent = (pathFileName, fileData) => {
-  try {
-    let dir = path.dirname(pathFileName)
-    makeDirectoryIfNotExists(dir)
-    fs.writeFileSync(pathFileName, fileData)
-    return true
-  } catch (e) {
-    console.error(e)
-    return false
-  }
-}
+// const saveFileContent = (pathFileName, fileData) => {
+//   try {
+//     let dir = path.dirname(pathFileName)
+//     makeDirectoryIfNotExists(dir)
+//     fs.writeFileSync(pathFileName, fileData)
+//     return true
+//   } catch (e) {
+//     console.error(e)
+//     return false
+//   }
+// }
 
 const __root = path.normalize(__dirname + "/..")
 const __public = path.normalize(__dirname + "/../public")
@@ -302,9 +302,8 @@ module.exports = {
   logoutUser,
   apiLogoutUser,
   generateString,
-  makeDirectoryIfNotExists,
-  saveFileContent,
   getAllFilesAndDirs,
+  makeDirectoryIfNotExists,
   __root,
   __public,
 }

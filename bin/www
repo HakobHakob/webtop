@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /* Module dependencies.*/
-require('dotenv').config()
+require("dotenv").config()
 const { exec, spawn } = require("node:child_process")
 const moment = require("moment/moment")
 const log = require("../components/logger")
@@ -37,7 +37,7 @@ try {
   }
 
   /* Event listener for HTTP server "error" event.*/
-  const onError = (error) => {
+  function onError(error) {
     if (error.syscall !== "listen") {
       throw error
     }
@@ -59,7 +59,7 @@ try {
   }
 
   /* Event listener for HTTP server "listening" event.*/
-  const onListening = () => {
+  function onListening() {
     let addr = server.address()
     let bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port
     debug("Listening on " + bind)
