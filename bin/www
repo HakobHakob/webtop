@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-/**
- * Module dependencies.
- */
+/* Module dependencies.*/
 const { exec, spawn } = require("node:child_process")
 const moment = require("moment/moment")
 const log = require("../components/logger")
@@ -11,56 +9,37 @@ try {
   const debug = require("debug")("sample-nodejs:server")
   const http = require("node:http")
 
-  /**
-   * Get port from environment and store in Express.
-   */
-
+  /* Get port from environment and store in Express.*/
   const port = normalizePort(process.env.PORT || "3000")
   app.set("port", port)
 
-  /**
-   * Create HTTP server.
-   */
-
+  /* Create HTTP server.*/
   const server = http.createServer(app)
 
-  /**
-   * Listen on provided port, on all network interfaces.
-   */
-
+  /* Listen on provided port, on all network interfaces.*/
   server.listen(port)
   server.on("error", onError)
   server.on("listening", onListening)
 
-  /**
-   * Normalize a port into a number, string, or false.
-   */
-
+  /* Normalize a port into a number, string, or false.*/
   function normalizePort(val) {
     const port = parseInt(val, 10)
-
     if (isNaN(port)) {
       // named pipe
       return val
     }
-
     if (port >= 0) {
       // port number
       return port
     }
-
     return false
   }
 
-  /**
-   * Event listener for HTTP server "error" event.
-   */
-
-  function onError(error) {
+  /* Event listener for HTTP server "error" event.*/
+  const onError = (error) => {
     if (error.syscall !== "listen") {
       throw error
     }
-
     let bind = typeof port === "string" ? "Pipe " + port : "Port " + port
 
     // handle specific listen errors with friendly messages
@@ -78,11 +57,8 @@ try {
     }
   }
 
-  /**
-   * Event listener for HTTP server "listening" event.
-   */
-
-  function onListening() {
+  /* Event listener for HTTP server "listening" event.*/
+  const onListening = () => {
     let addr = server.address()
     let bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port
     debug("Listening on " + bind)
@@ -90,13 +66,13 @@ try {
 } catch (error) {
   console.error(error)
   setTimeout(() => {
-    // process.exit(1);
-    log.error(
-      moment().format("yyyy_MM_DD-HH:mm:ss") + "\n" + error.stack + "\n\n"
-    )
-    spawn(process.argv[0], process.argv.slice(1), {
-      env: { process_restarting: 1 },
-      stdio: "ignore",
-    }).unref()
+    process.exit(1)
+    // log.error(
+    //   moment().format("yyyy_MM_DD-HH:mm:ss") + "\n" + error.stack + "\n\n"
+    // )
+    // spawn(process.argv[0], process.argv.slice(1), {
+    //   env: { process_restarting: 1 },
+    //   stdio: "ignore",
+    // }).unref()
   }, 5000)
 }
