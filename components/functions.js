@@ -3,6 +3,8 @@ const { User } = require("../models")
 const db = require("../models")
 const { boolean } = require("joi")
 const { conf } = require("../config/app_config")
+const fs = require("node:fs")
+const path = require("node:path")
 const queryInterface = db.sequelize.getQueryInterface()
 
 const getTokenData = async (userId, role, token) => {
@@ -63,8 +65,8 @@ const getApiAuth = async (req, res) => {
 
 const getWebAuth = async (req, res) => {
   let authData = {}
-  for (let key in req.cookies) {  
-    if (key.startsWith(conf.web.prefix + conf.token.delimiter)) {     
+  for (let key in req.cookies) {
+    if (key.startsWith(conf.web.prefix + conf.token.delimiter)) {
       let sesToken = req.cookies[key]
       let [userId, role] = sesToken
         ? sesToken.split(conf.token.delimiter)
@@ -235,6 +237,63 @@ const apiLogoutUser = async (userId, role, req, res) => {
   return false
 }
 
+const makeDirectoryIfNotExists = (path) => {
+  let pathArr = path.split(/[/\\]/gi)
+  try {
+    let addPath = ""
+    pathArr.forEach((pathItem) => {
+      addPath += pathItem + "/"
+      if (!fs.existsSync(addPath) || !fs.statSync(addPath).isDirectory()) {
+        fs.mkdirSync(addPath)
+      }
+    })
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+const saveFileContent = (pathFileName, fileData) => {
+  try {
+    let dir = path.dirname(pathFileName)
+    makeDirectoryIfNotExists(dir)
+    fs.writeFileSync(pathFileName, fileData)
+    return true
+  } catch (e) {
+    console.error(e)
+    return false
+  }
+}
+
+const __root = path.normalize(__dirname + "/..")
+const __public = path.normalize(__dirname + "/../public")
+
+const getAllFilesAndDirs = (startPath) => {
+  let deltaPath = arguments.length > 1 ? startPath : ""
+  startPath = arguments.length > 1 ? arguments[1] : startPath
+  let slash = deltaPath ? "/" : ""
+  let fullPath = startPath + slash + deltaPath
+  let files = [],
+    dirs = []
+  let filesOrDirs = fs.readdirSync(fullPath)
+  for (let fileOrDir of filesOrDirs) {
+    let newPath = fullPath + "/" + fileOrDir
+    if (fs.statSync(newPath).isFile()) {
+      files.push({ path: fullPath, file: fileOrDir, relativePath: deltaPath })
+    } else if (fs.statSync(newPath).isDirectory()) {
+      let incoming = getAllFilesAndDirs(
+        deltaPath + slash + fileOrDir,
+        startPath
+      )
+      files.push(...incoming.files)
+      dirs.push(
+        { path: fullPath, dir: fileOrDir, relativePath: deltaPath },
+        ...incoming.dirs
+      )
+    }
+  }
+  return { files, dirs }
+}
+
 module.exports = {
   getApiAuth,
   getWebAuth,
@@ -243,4 +302,9 @@ module.exports = {
   logoutUser,
   apiLogoutUser,
   generateString,
+  makeDirectoryIfNotExists,
+  saveFileContent,
+  getAllFilesAndDirs,
+  __root,
+  __public,
 }
