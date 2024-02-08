@@ -49,4 +49,27 @@ const unique = async (table, columnName, columnValue) => {
   return null
 }
 
-module.exports = { api_validate, loginScheme, registrationSchema, unique }
+class ValidateClass {
+  constructor(req, fn) {
+    this._req = req
+    this._body = req.body
+    this._files = req.files
+    let answ = fn(this)
+
+    return answ
+  }
+  number() {
+    return this
+  }
+  integer() {}
+  string() {}
+  required() {}
+}
+
+module.exports = {
+  api_validate,
+  loginScheme,
+  registrationSchema,
+  unique,
+  ValidateClass,
+}
