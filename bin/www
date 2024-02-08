@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 /* Module dependencies.*/
+require('dotenv').config()
 const { exec, spawn } = require("node:child_process")
 const moment = require("moment/moment")
 const log = require("../components/logger")

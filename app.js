@@ -1,6 +1,7 @@
 const express = require("express")
 const app = express()
 const path = require("path")
+const cors = require("cors")
 
 global.__basedir = __dirname
 const cookieParser = require("cookie-parser")
@@ -8,9 +9,11 @@ const cookieParser = require("cookie-parser")
 const session = require("express-session")
 const bodyParser = require("body-parser") //To access the parameters passed with API request
 
-// configure our .env file
-require("dotenv").config() //is used to load the .env file, so that using process.env.{KEY} we can access the environment variables defined in the .env file. */
+/* configure our .env file
+This is used to load the .env file, so that using process.env.{KEY} we can access the environment variables defined in the .env file. */
+require("dotenv").config()
 
+app.use(cors())
 app.use(bodyParser.json())
 app.use(
   bodyParser.urlencoded({
