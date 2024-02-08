@@ -91,13 +91,13 @@ const executeQuery = (query) => {
   const config = conf.database[mode]
   return new Promise((resolve, reject) => {
     let con = mysql.createConnection(config)
-    con.connect(function (err) {
-      if (err) {
-        reject(err)
+    con.connect((error) => {
+      if (error) {
+        reject(error)
       }
-      con.query(query, function (err, result) {
-        if (err) {
-          reject(err)
+      con.query(query, (error, result) => {
+        if (error) {
+          reject(error)
         }
         resolve(result)
       })
@@ -304,8 +304,9 @@ class DBClass {
 
   limit = (limitValue) => {
     if (limitValue !== undefined) {
-      _limit = limitValue
+      this._limit = limitValue
     }
+    return this
   }
 
   paginate(page, perPage) {
@@ -337,6 +338,17 @@ class DBClass {
       relationColumn,
       fn
     )
+  }
+
+  when(condition, fn) {
+    if (
+      arguments.length > 1 &&
+      Boolean(condition) &&
+      typeof fn === "function"
+    ) {
+      fn(this)
+    }
+    return this
   }
 
   get(columns = this._table + "." + "*") {
@@ -454,87 +466,184 @@ class DBClass {
     return this._queryBuilder()
   }
 
-  createTable(obj) {
-    if (!obj || typeof obj !== "object") {
+  createTable(arr) {
+    if (!arr || !Array.isArray(arr)) {
       return null
     }
-    this._r_table = "CREATE TABLE"
+    arr.forEach((arrItem, i) => {
+      if (arrItem && typeof arrItem === "object" && "__s" in arrItem) {
+        arr[i] = arrItem.__s(this._tableName, "createTable")
+      }
+    })
+    this._r_table = "CREATE TABLE" + " IF NOT EXISTS"
     this._table_r = "("
-    let table_r_arr = []
-    for (let column in obj) {
-      table_r_arr.push(_col(column) + " " + obj[column])
-    }
-    // this._table_r += "PersonID int, LastName varchar(255), Address varchar(255), City varchar(255)";
-    this._table_r += table_r_arr.join(", ")
+    this._table_r += arr.join(", ")
     this._table_r += ")"
     return this._queryBuilder()
   }
 
-  static dataTypes() {
-    let _dataTypes = [
-      "bigint",
-      "binary",
-      "bit",
-      "blob",
-      "char",
-      "date",
-      "datetime",
-      "decimal",
-      "double",
-      "enum",
-      "float",
-      "geometry",
-      "geometrycollection",
-      "int",
-      "integer",
-      "json",
-      "linestring",
-      "longblob",
-      "longtext",
-      "mediumblob",
-      "mediumint",
-      "mediumtext",
-      "multilinestring",
-      "multipoint",
-      "multipolygon",
-      "numeric",
-      "point",
-      "polygon",
-      "real",
-      "set",
-      "smallint",
-      "text",
-      "time",
-      "timestamp",
-      "tinyblob",
-      "tinyint",
-      "tinytext",
-      "varbinary",
-      "varchar",
-      "year",
-    ]
-    let q_str = ""
-    let secondHandle = {
-      nullable: function () {
-        q_str += " DEFAULT NULL"
-        return q_str
-      },
-      default: function (def) {
-        q_str += " DEFAULT " + _val(def)
-        return q_str
-      },
-      ablab: "qwerty",
-      tblab: "asdfgh",
+  deleteTable() {
+    this._r_table = "DROP TABLE" + " IF EXISTS"
+    return this._queryBuilder()
+  }
+
+  deleteColumn(columnName) {
+    this._r_table = "ALTER TABLE"
+    this._table_r = "DROP COLUMN " + _col(columnName)
+    return this._queryBuilder()
+  }
+
+  addColumns(arr) {
+    if (!arr || !Array.isArray(arr)) {
+      return null
     }
-    let firstHandle = {}
-    _dataTypes.forEach((dataType) => {
-      firstHandle[dataType] = function () {
-        q_str += dataType + "(" + [...arguments].join(", ") + ")"
-        return secondHandle
+    arr.forEach((arrItem, i) => {
+      if (arrItem && typeof arrItem === "object" && "__s" in arrItem) {
+        arr[i] = arrItem.__s(this._tableName, "addColumns")
       }
     })
-    // return firstHandle;
-    return {
+    this._r_table = "ALTER TABLE"
+    this._table_r = "ADD ("
+    this._table_r += arr.join(", ")
+    this._table_r += ")"
+    return this._queryBuilder()
+  }
+
+  changeColumn(obj) {
+    if (arguments.length < 1) {
+      return null
+    }
+    if (obj && typeof obj === "object" && "__s" in obj) {
+      obj = obj.__s(this._tableName, "changeColumn")
+    }
+    this._r_table = "ALTER TABLE"
+    this._table_r = "MODIFY COLUMN "
+    this._table_r += obj
+    return this._queryBuilder()
+  }
+
+  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  static column(_column) {
+    let q_str = "",
+      q_arr = []
+    let q_obj = { notNull: "NOT NULL" }
+    let secondary = {
+      raw: (rawValue) => {
+        q_obj.raw = rawValue
+        return secondary
+      },
+      check: (condition, value) => {
+        q_obj.check = "CHECK (" + _col(_column) + condition + value + ")"
+        return secondary
+      },
+      from: (startingValue) => {
+        // q_str += " ";
+        return secondary
+      },
+      charset: (ch) => {
+        // q_str += " ";
+        return secondary
+      },
+      collation: (coll) => {
+        // q_str += " ";
+        return secondary
+      },
+      after: (col) => {
+        // q_str += " ";
+        return secondary
+      },
+      change: () => {
+        // q_str += " ";
+        return secondary
+      },
+      unsigned: () => {
+        q_obj.unsigned = "UNSIGNED"
+        return secondary
+      },
+      primary: () => {
+        q_obj.primary = "PRIMARY KEY (" + _col(_column) + ")"
+        return secondary
+      },
+      foreign: (referenceTable, referencePrimaryKey) => {
+        q_obj.foreign = [referenceTable, referencePrimaryKey]
+        return secondary
+      },
+      dropForeign: (referenceTable) => {
+        q_obj.dropForeign = referenceTable
+        return secondary
+      },
+      unique: () => {
+        q_obj.unique = "UNIQUE"
+        return secondary
+      },
+      nullable: () => {
+        delete q_obj.notNull
+        return secondary
+      },
+      default: (def) => {
+        q_obj.default = "DEFAULT " + _val(def)
+        return secondary
+      },
+      autoIncrement: (def) => {
+        q_obj.autoIncrement = "AUTO_INCREMENT"
+        return secondary
+      },
+      __s: (tableName = "", fromMethod = "") => {
+        //_col(_column) + ' ' + "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (" + _column + ")";
+        if (q_obj.raw) {
+          return _col(_column) + " " + q_obj.raw
+        }
+        if (q_obj.dataType) {
+          q_arr.push(_col(_column))
+          if (q_obj.arguments) {
+            q_arr.push(q_obj.dataType + q_obj.arguments)
+          } else {
+            q_arr.push(q_obj.dataType)
+          }
+        }
+        let keySequence = ["unsigned", "notNull", "autoIncrement", "default"]
+        keySequence.forEach((key) => {
+          if (q_obj[key]) {
+            q_arr.push(q_obj[key])
+          }
+        })
+        if (q_obj.primary) {
+          q_arr.push(", " + q_obj.primary)
+        }
+        if (q_obj.foreign) {
+          let prefix = fromMethod === "changeColumn" ? "ADD " : ""
+          let [referenceTable, referencePrimaryKey] = q_obj.foreign
+          q_arr.push(
+            ", " +
+              prefix +
+              "CONSTRAINT " +
+              _col("FK_" + tableName + "__" + referenceTable) +
+              " FOREIGN KEY (" +
+              _col(_column) +
+              ") REFERENCES " +
+              _col(referenceTable) +
+              "(" +
+              _col(referencePrimaryKey) +
+              ")"
+          )
+        }
+        if (q_obj.dropForeign) {
+          q_arr.push(
+            ", DROP FOREIGN KEY " +
+              _col("FK_" + tableName + "__" + q_obj.dropForeign)
+          )
+        }
+        if (q_obj.check) {
+          q_arr.push(", " + q_obj.check)
+        }
+        return q_arr.join(" ")
+      },
+    }
+    const f = () => {
+      return secondary
+    }
+    let primary = {
       bigint: f,
       binary: f,
       bit: f,
@@ -576,10 +685,25 @@ class DBClass {
       varchar: f,
       year: f,
     }
-    function f() {
-      q_str += "dataType" + "(" + [...arguments].join(", ") + ")"
-      return secondHandle
+    for (let key in primary) {
+      primary[key] = () => {
+        q_obj.dataType = key.toUpperCase()
+        if (arguments.length > 0) {
+          q_obj.arguments = "(" + [...arguments].join(", ") + ")"
+        }
+        return secondary
+      }
     }
+    primary.id = () => {
+      return (
+        _col(_column) +
+        " " +
+        "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (" +
+        _column +
+        ")"
+      )
+    }
+    return primary
   }
 
   _queryBuilder() {
