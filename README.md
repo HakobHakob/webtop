@@ -35,6 +35,7 @@ npx sequelize-cli init
 npm i sharp
 npm i winston
 npm i uuid
+npm i md5
 ```
 
 - Migrations

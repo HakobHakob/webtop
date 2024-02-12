@@ -20,6 +20,27 @@ const loginScheme = () => {
   }
 }
 
+const userUpdateScheme = () => {
+  return {
+    email: Joi.string().email(),
+    firstName: Joi.string().min(2).max(30),
+    lastName: Joi.string().min(2).max(30),
+    role: Joi.string().min(2).max(30),
+    old_password: Joi.string().min(6).max(30),
+    new_password: Joi.string().min(6).max(30),
+  }
+}
+
+const teamScheme = () => {
+  return {
+    firstName: Joi.string().min(2).max(30).required(),
+    lastName: Joi.string().min(2).max(30).required(),
+    // rank: Joi.string().min(2).max(512),
+    title: Joi.string().min(2).max(512),
+    description: Joi.string().min(2).max(512),
+  }
+}
+
 const api_validate = (schema, req, res) => {
   const valid_err = {}
   const schema_joi = Joi.object(schema)
@@ -70,6 +91,8 @@ module.exports = {
   api_validate,
   loginScheme,
   registrationSchema,
+  userUpdateScheme,
+  teamScheme,
   unique,
   ValidateClass,
 }

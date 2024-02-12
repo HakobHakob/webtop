@@ -1,38 +1,62 @@
-const moment = require("moment")
+const moment = require("moment/moment")
 const { DB } = require("./components/db")
+const { exec, spawn } = require("node:child_process")
+const { Kernel } = require("./http/console/kernel")
 
-/*
-SELECT column1, column2, ... FROM
-table_name;
-
-INSERT INTO table_name (column1, column2, column3, ...)
-VALUES (value1, value2, value3, ...);
-
-DELETE FROM table_name WHERE condition;
-
-UPDATE table_name
-SET column1 = value1, column2 = value2, ...
-WHERE condition;
-
-
-*/
+function sleep(t) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, t)
+  })
+}
 
 async function f() {
+  let args = process.argv.slice(2)
+  let com_answer = await new Kernel(args, __dirname).distributor()
+  console.log(com_answer)
+  // exec("nodemon start", (error, stdout, stderr) => {
+  //     if (error) {
+  //         console.log(`error: ${error.message}`);
+  //         return;
+  //     }
+  //     if (stderr) {
+  //         console.log(`stderr: ${stderr}`);
+  //         return;
+  //     }
+  //     console.log(`stdout: ${stdout}`);
+  // });
+  // await sleep(10000);
+  // let delTable = await DB("persons").deleteTable();
   // DB.dataTypes().bigint();
-  // let a = DB.dataTypes().varchar(255).default("tambrdam")
+  // let a = DB.dataTypes().varchar(255).default('qwerty');
+  // console.log(a);
+  // let createTable = await DB("persons").createTable([
+  //     DB.column("id").id(),
+  //     DB.column("user_id").bigint().foreign('users', 'id'),
+  //     DB.column("first_name").varchar(255).default('Valod'),
+  //     DB.column("address").varchar(255).nullable(),
+  //     DB.column("city").varchar(255),
+  //     DB.column("created_at").timestamp(),
+  //     DB.column("updated_at").timestamp(),
+  // ]);
+  // console.log(createTable);
+  // let changeColumn = await DB("persons").changeColumn(
+  //     DB.column("user_id").bigint().dropForeign('users')
+  // );
+  // console.log(changeColumn);
 
-  // console.log(a)
-
-  // let createTable = await DB("persons").createTable({
-  //   // id: DB.dataTypes().a1().a2().a3,
-  //   person_id: "bigint NOT NULL",
-  //   last_name: "varchar(255)",
-  //   address: "varchar(255)",
-  //   city: "varchar(255)",
-  // })
-  // console.log(createTable)
-
-  // let answer = await DB("users").where("role", "admin").orWhereBetween("id", 1, 10).get();
+  // let addColumns = await DB("persons").addColumns([
+  //     DB.column("user_id").bigint().foreign('users', 'id'),
+  // ]);
+  // console.log(addColumns);
+  // let a = 5;
+  // let answer = await DB("users")
+  //     .when(a < 10, function (query) {
+  //         query.where("role", "admin");
+  //         query.limit(1);
+  //     })
+  //     // .where("role", "admin")
+  //     // .orWhereBetween("id", 1, 10)
+  //     .get();
   // console.log(answer);
 
   // let answer = await DB("users").where("role", "admin").where(function (query) {

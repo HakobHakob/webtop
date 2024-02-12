@@ -1,12 +1,14 @@
 const fs = require("fs")
 const { translations } = require("./translations")
 const { conf } = require("../config/app_config")
-const { makeDirectoryIfNotExists } = require("./functions")
+const { makeDirectoryIfNotExists, generateString } = require("./functions")
+const extFrom = require("./mimeToExt")
+const md5 = require("md5")
 
-const saveFileContentToPublic = (path, fileName, fileData) => {
+const saveFileContentToPublic = async (path, fileName, fileData) => {
   try {
-    let fullPath = __basedir + "/public/images/" + path
-    makeDirectoryIfNotExists(fullPath)
+    let fullPath = __basedir + "/public/" + path
+    await makeDirectoryIfNotExists(fullPath)
     fs.writeFileSync(fullPath + "/" + fileName, fileData)
     return true
   } catch (error) {
@@ -53,4 +55,18 @@ const translate = (word, language) => {
   }
 }
 
-module.exports = { saveFileContentToPublic, translate }
+// Function to handle image upload
+const handleImageUpload = async (image, index, path) => {
+  let imageName = md5(Date.now() + index.toString()) + generateString(4)
+  let ext = extFrom(image.mimetype, image.name)
+  if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg") {
+    throw new Error("file not a jpg or png.")
+  }
+  let uploaded = saveFileContentToPublic(path, imageName + ext, image.data)
+  if (!uploaded) {
+    throw new Error("file not uploaded.")
+  }
+  return imageName + ext
+}
+
+module.exports = { handleImageUpload, saveFileContentToPublic, translate }

@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 /* Module dependencies.*/
-require("dotenv").config()
+const http = require("node:http")
+const debug = require("debug")("sample-nodejs:server")
 const { exec, spawn } = require("node:child_process")
+require("dotenv").config()
 const moment = require("moment/moment")
 const log = require("../components/logger")
 try {
   const app = require("../app")
-  const debug = require("debug")("sample-nodejs:server")
-  const http = require("node:http")
 
   /* Get port from environment and store in Express.*/
   const port = normalizePort(process.env.PORT || "3000")
@@ -65,15 +65,24 @@ try {
     debug("Listening on " + bind)
   }
 } catch (error) {
-  console.error(error)
+  // console.error(error)
+  // setTimeout(() => {
+  //   // process.exit(1)
+  //   log.error(
+  //     moment().format("yyyy_MM_DD-HH:mm:ss") + "\n" + error.stack + "\n\n"
+  //   )
+  //   spawn(process.argv[0], process.argv.slice(1), {
+  //     env: { process_restarting: 1 },
+  //     stdio: "ignore",
+  //   }).unref()
+  // }, 5000)
+
+  console.error(e)
   setTimeout(() => {
     process.exit(1)
-    // log.error(
-    //   moment().format("yyyy_MM_DD-HH:mm:ss") + "\n" + error.stack + "\n\n"
-    // )
     // spawn(process.argv[0], process.argv.slice(1), {
-    //   env: { process_restarting: 1 },
-    //   stdio: "ignore",
-    // }).unref()
-  }, 5000)
+    //     env: { process_restarting: 1 },
+    //     stdio: 'ignore',
+    // }).unref();
+  }, 1000)
 }

@@ -1,8 +1,8 @@
 const userResource = (userModel) => {
   return {
-    first_name: userModel.dataValues.firstName,
-    last_name: userModel.dataValues.lastName,
-    email: userModel.dataValues.email,
+    first_name: userModel.firstName,
+    last_name: userModel.lastName,
+    email: userModel.email,
   }
 }
 

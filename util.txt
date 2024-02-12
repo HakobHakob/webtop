@@ -1,0 +1,14 @@
+node com make:migration products
+node com help
+ node com help
+
+node com migrate                                           Migrate all.
+node com migrate table1 table2 ...                         Migrate table1, table2 ... by sequence.
+node com make:migration table1 table2 ...                  Make a table1, table2 ... migration(s) skeleton file(s).
+node com seed                                              Seed all.
+node com seed table1 table2 ...                            Seed table1, table2 ... by sequence.
+node com make:seeder table1 table2 ...                     Make a table1, table2 ... seeder(s) skeleton file(s).
+node com make:controller controller1 controller2 ...       Make a controller(s) skeleton file(s).
+node com make:command command1 command2 ...                Make a command(s) skeleton file(s).
+node com make:resource resource1 resource2 ...             Make a resource(s) skeleton file(s).
+node com make:notification notification1 notification2 ... Make a notification(s) skeleton file(s).

@@ -1,8 +1,10 @@
 "use strict"
+const { DB } = require("../components/db")
+const table = "employees"
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Users", {
+    await queryInterface.createTable(table, {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -15,6 +17,27 @@ module.exports = {
       lastName: {
         type: Sequelize.STRING,
       },
+      image: {
+        type: Sequelize.STRING,
+      },
+      images: {
+        type: Sequelize.JSON,
+      },
+      rank: {
+        type: Sequelize.STRING,
+      },
+      title: {
+        type: Sequelize.STRING,
+      },
+      description: {
+        type: Sequelize.STRING,
+      },
+
+      active: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true,
+        allowNull: false,
+      },
       email: {
         type: Sequelize.STRING,
       },
@@ -24,10 +47,6 @@ module.exports = {
       emailVerifyedAt: {
         allowNull: true,
         type: Sequelize.DATE,
-      },
-      role: {
-        allowNull: true,
-        type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: true,
@@ -39,7 +58,7 @@ module.exports = {
       },
     })
   },
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Users")
+  async down() {
+    await DB(table).deleteTable()
   },
 }

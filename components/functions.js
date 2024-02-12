@@ -122,7 +122,7 @@ const getWebAuth = async (req, res) => {
 const generateString = (str_length = 8) => {
   let str = ""
   const symbols =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@.-+*&^%{}[]:|=()@!?<>"
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@-+=@!"
   Array.from({ length: str_length }).forEach(() => {
     str += symbols[Math.floor(Math.random() * symbols.length)]
   })

@@ -1,5 +1,4 @@
 "use strict"
-
 const bcrypt = require("bcrypt")
 const { User } = require("../models")
 
@@ -17,7 +16,7 @@ const userInstance = User.build({
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert(
-      "Users",
+      "users",
       [
         {
           firstName: userInstance.firstName,
@@ -33,6 +32,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete("Users", null, {})
+    await queryInterface.bulkDelete("users", null, {})
   },
 }

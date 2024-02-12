@@ -1,32 +1,31 @@
 const mysql = require("mysql")
-const mysql_sync = require("sync-mysql")
+const mysql2 = require("mysql2")
 require("dotenv").config()
 const { conf } = require("../config/app_config")
 
-const _val = (value) => {
-  return value === null
-    ? "NULL"
-    : typeof value === "boolean"
-    ? value
-      ? 1
-      : 0
-    : value === undefined
-    ? ""
-    : "'" + value + "'"
+function _val(value) {
+  if (value === null) {
+    return "NULL"
+  } else if (typeof value === "boolean") {
+    return value ? 1 : 0
+  } else if (value === undefined) {
+    return ""
+  }
+  return "'" + value + "'"
 }
 
-const _col = (column) => {
+function _col(column) {
   return "`" + column + "`"
 }
 
-const _whereHas = (
+function _whereHas(
   _this,
   and_or,
   relationTable,
   selfColumn,
   relationColumn,
   fn = null
-) => {
+) {
   _this._conditions.push(and_or)
   let exists = "EXISTS (SELECT * FROM"
   let query = new DBClass(relationTable)
@@ -58,7 +57,7 @@ const _whereHas = (
   return _this
 }
 
-const _where = (_this, and_or, columnOrFn, condOrVal, val) => {
+function _where(_this, and_or, columnOrFn, condOrVal, val) {
   let argLen = arguments.length - 2
   if (argLen === 1 && typeof columnOrFn === "function") {
     let query = new DBClass(_this._tableName)
@@ -86,18 +85,18 @@ const _where = (_this, and_or, columnOrFn, condOrVal, val) => {
   return _this
 }
 
-const executeQuery = (query) => {
-  const mode = process.env.NODE_ENV ?? "production"
-  const config = conf.database[mode]
+function fDB(q) {
+  let mode = process.env.NODE_ENV ?? "production"
+  let config = conf.database[mode]
   return new Promise((resolve, reject) => {
     let con = mysql.createConnection(config)
-    con.connect((error) => {
-      if (error) {
-        reject(error)
+    con.connect(function (err) {
+      if (err) {
+        reject(err)
       }
-      con.query(query, (error, result) => {
-        if (error) {
-          reject(error)
+      con.query(q, function (err, result) {
+        if (err) {
+          reject(err)
         }
         resolve(result)
       })
@@ -302,9 +301,9 @@ class DBClass {
     return this
   }
 
-  limit = (limitValue) => {
-    if (limitValue !== undefined) {
-      this._limit = limitValue
+  limit(n) {
+    if (n !== undefined) {
+      this._limit = n
     }
     return this
   }
@@ -397,7 +396,10 @@ class DBClass {
         all_values.push("(" + values.join(", ") + ")")
       })
       this._table_r =
-        "(" + columns.join(", ") + ") VALUES " + all_values.join(", ")
+        "(" +
+        columns.map((c) => _col(c)).join(", ") +
+        ") VALUES " +
+        all_values.join(", ")
     } else if (
       typeof obj === "object" &&
       obj !== null &&
@@ -410,11 +412,7 @@ class DBClass {
         values.push(_val(obj[column]))
       }
       this._table_r =
-        "(" +
-        columns.map((column) => _col(column)).join(", ") +
-        ") VALUES (" +
-        values.join(", ") +
-        ")"
+        "(" + columns.join(", ") + ") VALUES (" + values.join(", ") + ")"
     }
     return this._queryBuilder()
   }
@@ -522,74 +520,72 @@ class DBClass {
     return this._queryBuilder()
   }
 
-  // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
   static column(_column) {
     let q_str = "",
       q_arr = []
     let q_obj = { notNull: "NOT NULL" }
     let secondary = {
-      raw: (rawValue) => {
+      raw: function (rawValue) {
         q_obj.raw = rawValue
         return secondary
       },
-      check: (condition, value) => {
+      check: function (condition, value) {
         q_obj.check = "CHECK (" + _col(_column) + condition + value + ")"
         return secondary
       },
-      from: (startingValue) => {
+      from: function (startingValue) {
         // q_str += " ";
         return secondary
       },
-      charset: (ch) => {
+      charset: function (ch) {
         // q_str += " ";
         return secondary
       },
-      collation: (coll) => {
+      collation: function (coll) {
         // q_str += " ";
         return secondary
       },
-      after: (col) => {
+      after: function (col) {
         // q_str += " ";
         return secondary
       },
-      change: () => {
+      change: function () {
         // q_str += " ";
         return secondary
       },
-      unsigned: () => {
+      unsigned: function () {
         q_obj.unsigned = "UNSIGNED"
         return secondary
       },
-      primary: () => {
+      primary: function () {
         q_obj.primary = "PRIMARY KEY (" + _col(_column) + ")"
         return secondary
       },
-      foreign: (referenceTable, referencePrimaryKey) => {
+      foreign: function (referenceTable, referencePrimaryKey) {
         q_obj.foreign = [referenceTable, referencePrimaryKey]
         return secondary
       },
-      dropForeign: (referenceTable) => {
+      dropForeign: function (referenceTable) {
         q_obj.dropForeign = referenceTable
         return secondary
       },
-      unique: () => {
+      unique: function () {
         q_obj.unique = "UNIQUE"
         return secondary
       },
-      nullable: () => {
+      nullable: function () {
         delete q_obj.notNull
         return secondary
       },
-      default: (def) => {
+      default: function (def) {
         q_obj.default = "DEFAULT " + _val(def)
         return secondary
       },
-      autoIncrement: (def) => {
+      autoIncrement: function (def) {
         q_obj.autoIncrement = "AUTO_INCREMENT"
         return secondary
       },
-      __s: (tableName = "", fromMethod = "") => {
+      __s: function (tableName = "", fromMethod = "") {
         //_col(_column) + ' ' + "BIGINT UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (" + _column + ")";
         if (q_obj.raw) {
           return _col(_column) + " " + q_obj.raw
@@ -640,7 +636,7 @@ class DBClass {
         return q_arr.join(" ")
       },
     }
-    const f = () => {
+    function f() {
       return secondary
     }
     let primary = {
@@ -686,7 +682,7 @@ class DBClass {
       year: f,
     }
     for (let key in primary) {
-      primary[key] = () => {
+      primary[key] = function () {
         q_obj.dataType = key.toUpperCase()
         if (arguments.length > 0) {
           q_obj.arguments = "(" + [...arguments].join(", ") + ")"
@@ -694,7 +690,7 @@ class DBClass {
         return secondary
       }
     }
-    primary.id = () => {
+    primary.id = function () {
       return (
         _col(_column) +
         " " +
@@ -707,7 +703,7 @@ class DBClass {
   }
 
   _queryBuilder() {
-    return executeQuery(this._all_q())
+    return fDB(this._all_q())
   }
 
   _all_q() {
@@ -743,7 +739,7 @@ class DBClass {
   }
 }
 
-const DB = (table) => {
+function DB(table) {
   return new DBClass(table)
 }
 
@@ -753,5 +749,6 @@ Object.getOwnPropertyNames(DBClass)
     DB[staticMethod] = DBClass[staticMethod]
   })
 
-// exports.executeQuery=executeQuery;
-module.exports = { executeQuery, DB }
+// console.log(Object.getOwnPropertyNames(DBClass));
+// exports.fDB=fDB;
+module.exports = { fDB, DB }

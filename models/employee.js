@@ -2,38 +2,34 @@
 const bcrypt = require("bcrypt")
 const { Model } = require("sequelize")
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {
+  class Employee extends Model {
     static associate(models) {
       // define association here
     }
     getFullName() {
-      return [this.first_name, this.last_name].join(" ")
+      return [this.firstName, this.lastName].join(" ")
     }
   }
-  User.init(
+  Employee.init(
     {
       firstName: DataTypes.STRING,
       lastName: DataTypes.STRING,
+      image: DataTypes.STRING,
+      images: DataTypes.JSON,
+      rank: DataTypes.STRING,
+      title: DataTypes.STRING,
+      description: DataTypes.STRING,
+      active: DataTypes.BOOLEAN,
       email: DataTypes.STRING,
-      password: {
-        type: DataTypes.STRING,
-        set(value) {
-          this.setDataValue("password", bcrypt.hashSync(value, 8))
-        },
-        get() {
-          return null
-        },
-      },
+      emailVerifyedAt: DataTypes.DATE,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
-      role: DataTypes.STRING,
-      emailVerifyedAt: DataTypes.DATE,
     },
     {
       sequelize,
-      modelName: "User",
-      tableName: "users",
+      modelName: "Employee",
+      tableName: "employees",
     }
   )
-  return User
+  return Employee
 }
