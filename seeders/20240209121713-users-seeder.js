@@ -9,7 +9,7 @@ const userInstance = User.build({
   email: "example@email.com",
   createdAt: new Date(),
   updatedAt: new Date(),
-  password: bcrypt.hashSync("123456", 10),
+  password: bcrypt.hashSync("123456", 8),
 })
 
 /** @type {import('sequelize-cli').Migration} */

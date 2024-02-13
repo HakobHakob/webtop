@@ -2,7 +2,6 @@ const express = require("express")
 const app = express()
 const path = require("path")
 const cors = require("cors")
-
 global.__basedir = __dirname
 const cookieParser = require("cookie-parser")
 // const log = require("./components/logger")
@@ -21,9 +20,9 @@ app.use(
     extended: true,
     parameterLimit: 50000,
   })
-)
-const webRouter = require("./routes/web")
-const apiRouter = require("./routes/api_v1")
+  )  
+  const webRouter = require("./routes/web")
+  const apiRouter = require("./routes/api_v1")
 
 const {
   notFoundHandler,
@@ -61,7 +60,6 @@ app.use(
     cookie: { maxAge: 10 * 60 * 1000 }, // Set the cookie expiration time
   })
 )
-
 app.use(require("./middlewares/authMiddleware"))
 app.use(require("./middlewares/api_auth"))
 

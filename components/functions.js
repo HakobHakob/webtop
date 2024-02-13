@@ -5,6 +5,7 @@ const { boolean } = require("joi")
 const { conf } = require("../config/app_config")
 const fs = require("node:fs")
 const path = require("node:path")
+const { DB } = require("./db")
 const queryInterface = db.sequelize.getQueryInterface()
 
 const getTokenData = async (userId, role, token) => {
@@ -55,7 +56,13 @@ const getApiAuth = async (req, res) => {
         role: role,
       })
     }
-    let auth = await User.findOne({ where: { id: userId } })
+    let auth
+    try {
+      auth = await DB("users").find(userId)
+    } catch (error) {
+      console.error(error)
+    }
+
     if (auth && userId && role) {
       return { auth, userId, role, newToken }
     }

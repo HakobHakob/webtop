@@ -1,23 +1,30 @@
-const usersIndex = async (resource) => {
+const index = async (resourse) => {
   return {
-    id: resource.id,
-    first_name: resource.first_name,
-    last_name: resource.last_name,
-    email: resource.email,
-    photo: resource.photo,
-    email_verified_at: resource.email_verified_at,
-    role: resource.role,
-    created_at: resource.created_at,
-    updated_at: resource.updated_at,
+    id: resourse.id,
+    first_name: resourse.first_name,
+    last_name: resourse.last_name,
+    email: resourse.email,
+    photo: resourse.photo,
+    email_verified_at: resourse.email_verified_at,
+    role: resourse.role,
+    created_at: resourse.created_at,
+    updated_at: resourse.updated_at,
   }
 }
 
-const usersCollection = async (resources) => {
-  let result = []
-  for (let resource of resources) {
-    result.push(await usersIndex(resource))
+const collection = async (resource) => {
+  let aArr = []
+  for (const res of resource) {
+    aArr.push(await index(res))
   }
-  return result
+  return aArr
 }
 
-module.exports = { usersIndex, usersCollection }
+const userResource = async (resource = {}, params = {}) => {
+  if (Array.isArray(resource)) {
+    return collection(resource)
+  }
+  return index(resource)
+}
+
+module.exports = userResource

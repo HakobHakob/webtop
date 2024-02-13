@@ -1,33 +1,51 @@
-const teamsIndex = async (resource, params) => {
-  const local = params
-  if (Array.isArray(resource)) {
-    return teamsCollection(resource, local)
-  }
+const { translate } = require("../../components/globalFunctions")
+
+const index = async (resourse, localParams) => {
+  const {
+    id,
+    first_name,
+    last_name,
+    image,
+    images,
+    rank,
+    title,
+    description,
+    active,
+    created_at,
+    updated_at,
+  } = resourse
+
   return {
-    id: resource.id,
-    firstName: resource.firstName,
-    lastName: resource.lastName,
-    image: resource.image,
-    images: resource.images ? JSON.parse(resource.images) : resource.images,
-    rank: resource.rank ? tr(JSON.parse(resource.rank), local) : resource.rank,
-    title: resource.title
-      ? tr(JSON.parse(resource.title), local)
-      : resource.title,
-    description: resource.description
-      ? tr(JSON.parse(resource.description), local)
-      : resource.description,
-    active: resource.active,
-    created_at: resource.created_at,
-    updated_at: resource.updated_at,
+    id,
+    first_name,
+    last_name,
+    image,
+    images: images ? JSON.parse(images) : images,
+    rank: rank ? translate(JSON.parse(rank), localParams) : rank,
+    title: title ? translate(JSON.parse(title), localParams) : title,
+    description: description
+      ? translate(JSON.parse(description), localParams)
+      : description,
+    active,
+    created_at,
+    updated_at,
   }
 }
 
-const teamsCollection = async (resources, params) => {
-  let result = []
-  for (let resource of resources) {
-    result.push(await teamsIndex(resource, params))
+const collection = async (resource) => {
+  let aArr = []
+  for (let res of resource) {
+    aArr.push(await index(res))
   }
-  return result
+  return aArr
 }
 
-module.exports = { teamsIndex, teamsCollection }
+const teamsResource = async (resource = {}, localParams = {}) => {
+  // localParams =>>> ?? conf.lang.default ?? null;
+  if (Array.isArray(resource)) {
+    return collection(resource)
+  }
+  return index(resource, localParams)
+}
+
+module.exports = teamsResource

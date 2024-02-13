@@ -1,33 +1,50 @@
-const { DB } = require("../../components/db")
+const { translate } = require("../../components/globalFunctions")
+const { conf } = require("../../config/app_config")
 
-const settingsIndex = async (resource, params) => {
-  const local = params
-  if (Array.isArray(resource)) {
-    return collection(resource, local)
+const collection = async (resource) => {
+  let aArr = []
+  for (let res of resource) {
+    aArr.push(await this.index(res))
   }
+  return aArr
+}
+
+const index = async (resourse, params) => {
+  // params =>>>>>  conf.lang.default ?? null;
+  const {
+    id,
+    key,
+    name,
+    description,
+    value,
+    type,
+    image,
+    images,
+    active,
+    created_at,
+    updated_at,
+  } = resourse
   return {
-    id: resource.id,
-    key: resource.key,
-    name: resource.name ? tr(JSON.parse(resource.name), local) : resource.name,
-    description: resource.description
-      ? tr(JSON.parse(resource.description), local)
-      : resource.description,
-    value: resource.value ? JSON.parse(resource.value) : resource.value,
-    type: resource.type,
-    image: resource.image,
-    images: resource.images ? JSON.parse(resource.images) : resource.images,
-    active: resource.active,
-    created_at: resource.created_at,
-    updated_at: resource.updated_at,
+    id,
+    key,
+    name: name ? translate(JSON.parse(name), params) : name,
+    description: description
+      ? translate(JSON.parse(description), params)
+      : description,
+    value: value ? JSON.parse(value) : value,
+    type,
+    image,
+    images: images ? JSON.parse(images) : images,
+    active,
+    created_at,
+    updated_at,
   }
 }
-
-const settingsCollection = async (resources, params) => {
-  let result = []
-  for (let resource of resources) {
-    result.push(await settingsIndex(resource, params))
+const settingsResources = (resource = {}, params = {}) => {
+  if (Array.isArray(resource)) {
+    return collection(resource)
   }
-  return result
+  return index(resource, params)
 }
 
-module.exports = { settingsIndex, settingsCollection }
+module.exports = settingsResources

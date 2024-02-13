@@ -12,14 +12,14 @@ const {
   logOut,
   register,
   createEmployee,
-  update,
+  updateEmployee,
   destroy,
 } = require("../http/controllers/admin/userController")
 const { Media } = require("../models")
 const extFrom = require("../components/mimeToExt")
 const { saveFileContentToPublic } = require("../components/globalFunctions")
-const adminDataIndex = require("../http/controllers/admin/adminDataController")
-const { teamsControllerCreate, teamsControllerUpdate, teamsControllerDestroy } = require("../http/controllers/admin/teamsController")
+// const adminDataIndex = require("../http/controllers/admin/adminDataController")
+
 
 // Group middlewares
 
@@ -31,7 +31,6 @@ const group = (callback) => {
 router.post("/admin/login", login)
 router.get("/admin/logged", logged)
 router.post("/admin/register", register)
-
 
 router.use(
   "/admin",
@@ -45,26 +44,21 @@ router.use(
     })
     adminRouter.get("/logout", logOut)
     //--------------------admin user---------------------------------
-    router.post("/admin/employee/create", createEmployee)
-    adminRouter.post("/user/update/:user_id", update)
+    adminRouter.post("/employee/create", createEmployee)
+    adminRouter.post("/employee/update/:user_id", updateEmployee)
     adminRouter.delete("/user/delete/:user_id", destroy)
     //--------------------admin team---------------------------------
-    adminRouter.post("/team/create", teamsControllerCreate)
-    adminRouter.post("/team/update/:user_id", teamsControllerUpdate)
-    adminRouter.delete("/team/delete/:user_id", teamsControllerDestroy)
+    // adminRouter.post("/team/create", teamsControllerCreate)
+    // adminRouter.post("/team/update/:user_id", teamsControllerUpdate)
+    // adminRouter.delete("/team/delete/:user_id", teamsControllerDestroy)
 
     // adminRouter.post('/notification', new UserController().notification);
 
-    adminRouter.post("/admin-data", adminDataIndex)
+    // adminRouter.post("/admin-data", adminDataIndex)
 
     // adminRouter.post("/register", register)
   })
 )
-
-router.post("/login", login)
-
-// Do logout
-router.get("/logout", logOut)
 
 // Post request to send an email
 router.post("/sendmail", async (req, res) => {
@@ -126,7 +120,7 @@ router.post("/sendmail", async (req, res) => {
 
 // Upload file with express-file-upload
 
-router.post("/profile", async (req, res) => {
+router.post("/upload_avatar", async (req, res) => {
   let file = req.files ? req.files.avatar : null
   if (!req.files || Object.keys(req.files).length === 0) {
     res.status(400).send("No files were uploaded.")
