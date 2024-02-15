@@ -45,7 +45,7 @@ router.use(
     adminRouter.get("/logout", logOut)
     //--------------------admin user---------------------------------
     adminRouter.post("/employee/create", createEmployee)
-    adminRouter.post("/employee/update/:user_id", updateEmployee)
+    adminRouter.post("/employee/update/:employee_id", updateEmployee)
     adminRouter.delete("/user/delete/:user_id", destroy)
     //--------------------admin team---------------------------------
     // adminRouter.post("/team/create", teamsControllerCreate)
@@ -53,9 +53,7 @@ router.use(
     // adminRouter.delete("/team/delete/:user_id", teamsControllerDestroy)
 
     // adminRouter.post('/notification', new UserController().notification);
-
     // adminRouter.post("/admin-data", adminDataIndex)
-
     // adminRouter.post("/register", register)
   })
 )

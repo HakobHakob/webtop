@@ -23,8 +23,8 @@ const loginScheme = () => {
 const userUpdateScheme = () => {
   return {
     email: Joi.string().email(),
-    firstName: Joi.string().min(2).max(30),
-    lastName: Joi.string().min(2).max(30),
+    first_name: Joi.string().min(2).max(30),
+    last_name: Joi.string().min(2).max(30),
     role: Joi.string().min(2).max(30),
     old_password: Joi.string().min(6).max(30),
     new_password: Joi.string().min(6).max(30),

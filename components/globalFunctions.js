@@ -1,4 +1,5 @@
 const fs = require("fs")
+const path = require("path")
 const { translations } = require("./translations")
 const { conf } = require("../config/app_config")
 const { makeDirectoryIfNotExists, generateString } = require("./functions")
@@ -56,17 +57,33 @@ const translate = (word, language) => {
 }
 
 // Function to handle image upload
-const handleImageUpload = async (image, index, path) => {
+const handleImageUpload = async (image, index = 0, path) => {
   let imageName = md5(Date.now() + index.toString()) + generateString(4)
   let ext = extFrom(image.mimetype, image.name)
   if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg") {
-    throw new Error("file not a jpg or png.")
+    throw new Error("File not a jpg or png.")
   }
-  let uploaded = saveFileContentToPublic(path, imageName + ext, image.data)
+  let uploaded = await saveFileContentToPublic(
+    path,
+    imageName + ext,
+    image.data
+  )
+
   if (!uploaded) {
-    throw new Error("file not uploaded.")
+    throw new Error("File not uploaded.")
   }
-  return imageName + ext
+  return path + imageName + ext
 }
 
-module.exports = { handleImageUpload, saveFileContentToPublic, translate }
+const deleteAllFilesInDir = async (dirPath) => {
+  fs.readdirSync(dirPath).forEach((file) => {
+    fs.rmSync(path.join(dirPath, file))
+  })
+}
+
+module.exports = {
+  handleImageUpload,
+  saveFileContentToPublic,
+  deleteAllFilesInDir,
+  translate,
+}

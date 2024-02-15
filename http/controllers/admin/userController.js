@@ -1,7 +1,6 @@
 const { User } = require("../../../models")
 const bcrypt = require("bcrypt")
 const { DB } = require("../../../components/db")
-const md5 = require("md5")
 const moment = require("moment/moment")
 const fs = require("node:fs")
 const { v4: uuidv4 } = require("uuid")
@@ -19,12 +18,11 @@ const {
 } = require("../../../components/functions")
 const { userNotification } = require("../../notifications/userNotification")
 const { apiErrors } = require("../../../components/util")
-const extFrom = require("../../../components/mimeToExt")
-const {
-  saveFileContentToPublic,
-  handleImageUpload,
-} = require("../../../components/globalFunctions")
 const userResource = require("../../resources/usersResourse")
+const {
+  handleImageUpload,
+  deleteAllFilesInDir,
+} = require("../../../components/globalFunctions")
 
 /**
  * verify, is admin logged in
@@ -126,36 +124,26 @@ const register = async (req, res, next) => {
     message = "User password generated automatically, it send to email."
   }
 
-  let userPhoto = req.files ? req.files.photo : null
-  let photo = null
-  if (userPhoto) {
-    const imageName = md5(Date.now()) + generateString(4)
-    const ext = extFrom(userPhoto.mimetype, userPhoto.name)
-    if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg") {
+  let userImg = req.files ? req.files.photo : null
+  let image = null
+  if (userImg) {
+    try {
+      const userImgPath = "storage/uploads/users/"
+      image = await handleImageUpload(userImg, 0, userImgPath)
+    } catch (error) {
       res.status(422)
-      return res.send({ errors: "file not a jpg or png." })
+      return res.send({ errors: error.message })
     }
-
-    const uploaded = saveFileContentToPublic(
-      "storage/uploads/users",
-      imageName + ext,
-      userPhoto.data
-    )
-    if (!uploaded) {
-      res.status(422)
-      return res.send({ errors: "file not uploaded." })
-    }
-    photo = "storage/uploads/users/" + imageName + ext
   }
   const { firstName, lastName, email, password, role } = req.body
 
   const newUserData = {
     first_name: firstName,
     last_name: lastName,
-    email: email,
+    email,
     email_verified_at: moment().format("yyyy-MM-DD HH:mm:ss"),
-    role: role,
-    photo: photo,
+    role,
+    photo: image,
     password: bcrypt.hashSync(password, 8),
     created_at: moment().format("yyyy-MM-DD HH:mm:ss"),
     updated_at: moment().format("yyyy-MM-DD HH:mm:ss"),
@@ -168,16 +156,16 @@ const register = async (req, res, next) => {
     res.status(422)
     return res.send({ errors: "User not created." })
   }
-  await userNotification(
-    email,
-    "User created",
-    "Hello, You are registered in WebTop, your password: " + password
-  )
+  // await userNotification(
+  //   email,
+  //   "User created",
+  //   "Hello, You are registered in WebTop, your password: " + password
+  // )
   return res.send({ user: newUserData, message, generatedPassword })
 }
 
 const createEmployee = async (req, res, next) => {
-  const uniqueErr = await unique("users", "email", req.body.email)
+  const uniqueErr = await unique("employees", "email", req.body.email)
   if (uniqueErr) {
     res.status(422)
     return res.send({ errors: { email: uniqueErr } })
@@ -198,17 +186,16 @@ const createEmployee = async (req, res, next) => {
   }
   if (!req.body.password) {
     generatedPassword = req.body.password = generateString(10)
-    message = "User password generated automatically, it send to email."
+    message = "Employee password generated automatically, it send to email."
   }
 
-  // Handle user photo upload
-  let userPhoto = req.files ? req.files.image : null
-  let photo = null
-
-  if (userPhoto) {
+  // Handle employee avatar upload
+  let employeeAvatar = req.files ? req.files.image : null
+  let avatar = null
+  if (employeeAvatar) {
     try {
-      const userPhotoPath = "storage/uploads/usersAvatar"
-      photo = await handleImageUpload(userPhoto, 0, userPhotoPath)
+      const employeeAvatarPath = "storage/uploads/employeeAvatar/"
+      avatar = await handleImageUpload(employeeAvatar, 0, employeeAvatarPath)
     } catch (error) {
       res.status(422)
       return res.send({ errors: error.message })
@@ -220,8 +207,8 @@ const createEmployee = async (req, res, next) => {
   let imagesJson = null
   let userImages = {}
   if (images) {
-    const userPhotoPath = "storage/uploads/usersImages"
     try {
+      const userPhotoPath = "storage/uploads/employeesImages/"
       await Promise.all(
         images.map(async (image, index) => {
           const imageName = await handleImageUpload(image, index, userPhotoPath)
@@ -236,49 +223,50 @@ const createEmployee = async (req, res, next) => {
     }
   }
 
-  let newUserData = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    image: photo,
+  const { firstName, lastName, rank, title, description, email, password } =
+    req.body
+
+  let newEmployeeData = {
+    firstName,
+    lastName,
+    image: avatar,
     images: imagesJson,
-    rank: req.body.rank,
-    title: req.body.title,
-    description: req.body.description,
-    email: req.body.email,
-    password: bcrypt.hashSync(req.body.password, 8),
+    rank: rank,
+    title,
+    description,
+    email,
+    password: bcrypt.hashSync(password, 8),
     emailVerifyedAt: moment().format("yyyy-MM-DD HH:mm:ss"),
     createdAt: moment().format("yyyy-MM-DD HH:mm:ss"),
     updatedAt: moment().format("yyyy-MM-DD HH:mm:ss"),
   }
 
-  const { email, password } = req.body
-
   try {
-    await DB("employees").create(newUserData)
+    await DB("employees").create(newEmployeeData)
   } catch (e) {
     console.error(e)
     res.status(422)
     return res.send({ errors: "User not created." })
   }
-  await userNotification(
-    email,
-    "User created",
-    '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' +
-      password +
-      "</div>",
-    "html"
-  )
-  return res.send({ user: newUserData, message, generatedPassword })
+  // await userNotification(
+  //   email,
+  //   "Employee created",
+  //   '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' +
+  //     password +
+  //     "</div>",
+  //   "html"
+  // )
+  return res.send({ user: newEmployeeData, message, generatedPassword })
 }
 
 const updateEmployee = async (req, res, next) => {
   req.session.errors = req.session.errors || {}
-  const { user_id } = req.params
-  let user = null
+  const { employee_id } = req.params
+  let employee = null
 
-  if (!user_id) {
+  if (!employee_id) {
     res.status(422)
-    return res.send({ errors: "There isn't user id parameter." })
+    return res.send({ errors: "There isn't employee id parameter." })
   }
   const scheme = userUpdateScheme()
   let validation_error = api_validate(scheme, req, res)
@@ -287,34 +275,34 @@ const updateEmployee = async (req, res, next) => {
     return res.send({ errors: valid_err })
   }
 
-  const { email, firstName, lastName, role, new_password, old_password } =
+  const { email, firstName, lastName, rank, new_password, old_password } =
     req.body
 
-  let updatedUserData = {}
+  let updateEmployeeData = {}
   try {
-    user = await DB("users").find(user_id)
-    if (!user) {
+    employee = await DB("employees").find(employee_id)
+    if (!employee) {
       res.status(422)
       return res.send({
-        errors: "User with this id " + user_id + " couldn't found.",
+        errors: "Employee with this id " + employee_id + " couldn't found.",
       })
     }
     if (email) {
-      const uniqueErr = await unique("users", "email", email)
+      const uniqueErr = await unique("employees", "email", email)
       if (uniqueErr) {
         res.status(422)
         return res.send({ errors: { email: uniqueErr } })
       }
-      updatedUserData.email = email
+      updateEmployeeData.email = email
     }
     if (firstName) {
-      updatedUserData.firstName = firstName
+      updateEmployeeData.firstName = firstName
     }
     if (lastName) {
-      updatedUserData.lastName = lastName
+      updateEmployeeData.lastName = lastName
     }
-    if (role) {
-      updatedUserData.role = role
+    if (rank) {
+      updateEmployeeData.rank = rank
     }
     if (new_password) {
       if (!old_password) {
@@ -323,41 +311,35 @@ const updateEmployee = async (req, res, next) => {
           errors: "The old password with new password is required.",
         })
       }
-      if (!bcrypt.compareSync(old_password, user.password)) {
+      if (!bcrypt.compareSync(old_password, employee.password)) {
         res.status(422)
         return res.send({ errors: "The old password is incorrect." })
       }
-      updatedUserData.password = bcrypt.hashSync(new_password, 8)
-    }
-    const userPhoto = req.files ? req.files.photo : null
-
-    console.log("userPhoto***************", userPhoto)
-
-    if (userPhoto) {
-      let imageName = uuidv4() + generateString(4)
-      let ext = extFrom(userPhoto.mimetype, userPhoto.name)
-      if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg") {
-        res.status(422)
-        return res.send({ errors: "file not a jpg or png." })
-      }
-
-      const uploaded = saveFileContentToPublic(
-        "storage/uploads/usersImages",
-        imageName + ext,
-        userPhoto.data
-      )
-      if (!uploaded) {
-        res.status(422)
-        return res.send({ errors: "Photo not uploaded." })
-      }
-      if (user.photo) {
-        fs.unlinkSync(__basedir + "/public/" + user.photo)
-      }
-      updatedUserData.photo = "storage/uploads/usersImages/" + imageName + ext
+      updateEmployeeData.password = bcrypt.hashSync(new_password, 8)
     }
 
-    if (Object.keys(updatedUserData).length > 0) {
-      await DB("users").where("id", user_id).update(updatedUserData)
+    const employeeAvatar = req.files ? req.files.photo : null
+    if (employeeAvatar) {
+      const avatarPath = "storage/uploads/employeeAvatar/"
+
+      // Remove the previous image if it exists
+      try {
+        if (employee.image) {
+          await deleteAllFilesInDir(__basedir + "/public/" + avatarPath)
+        }
+        updateEmployeeData.image = await handleImageUpload(
+          employeeAvatar,
+          employee_id,
+          avatarPath
+        )
+      } catch (error) {
+        res.status(422)
+        return res.send({ errors: error.message })
+      }
+    }
+
+    if (Object.keys(updateEmployeeData).length > 0) {
+      await DB("employees").where("id", employee_id).update(updateEmployeeData)
     } else {
       return res.send({ message: "Nothing to update." })
     }
@@ -367,7 +349,14 @@ const updateEmployee = async (req, res, next) => {
     return res.send({ errors: "User not updated." })
   }
 
-  return res.send({ message: "User data updated successfully." })
+  for (const key in updateEmployeeData) {
+    employee[key] = updateEmployeeData[key]
+  }
+
+  return res.send({
+    employee,
+    message: "User data updated successfully.",
+  })
 }
 
 const destroy = async (req, res, next) => {
@@ -376,6 +365,7 @@ const destroy = async (req, res, next) => {
     res.status(422)
     return res.send({ errors: "No user id parameter." })
   }
+
   if (user_id === res.locals.api_auth.admin.id.toString()) {
     res.status(422)
     return res.send({ errors: "You can not delete self." })
@@ -389,11 +379,11 @@ const destroy = async (req, res, next) => {
         errors: "User with this id " + user_id + " can not found.",
       })
     }
-    await DB("users").where("id", user_id).delete()
-    let photo = user.photo
+    const photo = user.photo
     if (photo) {
       fs.unlinkSync(__basedir + "/public/" + photo)
     }
+    await DB("users").where("id", user_id).delete()
   } catch (error) {
     console.error(error)
     res.status(422)
