@@ -22,7 +22,7 @@ const index = async (resourse, params) => {
 const collection = async (resource) => {
   let aArr = []
   for (const res of resource) {
-    aArr.push(await this.index(res))
+    aArr.push(await index(res))
   }
   return aArr
 }

@@ -27,6 +27,7 @@ const {
   destroySetting,
   updateSettings,
 } = require("../http/controllers/settingsController")
+const adminDataIndex = require("../http/controllers/admin/adminDataController")
 
 // Group middlewares
 
@@ -66,9 +67,8 @@ router.use(
     adminRouter.post("/setting/update/:setting_id([1-9]\\d?)", updateSettings)
     adminRouter.delete("/setting/delete/:setting_id([1-9]\\d?)", destroySetting)
 
+    adminRouter.post("/admin-data", adminDataIndex)
     // adminRouter.post('/notification', new UserController().notification);
-    // adminRouter.post("/admin-data", adminDataIndex)
-    // adminRouter.post("/register", register)
   })
 )
 

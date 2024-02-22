@@ -1,41 +1,68 @@
 const { DB } = require("../../../components/db")
-const {
-  settingsIndex,
-  settingsCollection,
-} = require("../../resources/settingsResourse")
-
-const { teamsIndex, teamsCollection } = require("../../resources/teamsResourse")
-const { usersIndex, usersCollection } = require("../../resources/usersResourse")
+const employeeResource = require("../../resources/employeeResource")
+const settingsResources = require("../../resources/settingsResourse")
+const userResource = require("../../resources/usersResourse")
 
 const adminDataIndex = async (req, res, next) => {
-  {
-    let items = {
-      settings: { index: settingsIndex, collection: settingsCollection },
-      users: { index: usersIndex, collection: usersCollection },
-      teams: { index: teamsIndex, collection: teamsCollection },
-    }
-    let sendData = { data: {}, errors: {} }
-    for (let item in items) {
-      if (item in req.body) {
-        try {
-          let requestData = req.body[item]
-            ? JSON.parse(req.body[item])
-            : { page: 1, perPage: 10 }
-          let { page = 1, perPage = 10 } = requestData
-          let sqlData = await DB(item).paginate(page, perPage).get()
-          sendData.data[item] = await items[item].collection(
-            sqlData,
-            res.locals.$api_local
-          )
-        } catch (e) {
-          console.error(e)
-          sendData.data[item] = null
-          sendData.errors[item] = "Not a correct data or server side error."
+  const items = {
+    settings: settingsResources,
+    users: userResource,
+    employees: employeeResource,
+  }
+  const sendData = { data: {}, errors: {} }
+  for (const item in items) {
+    if (item in req.body) {
+      try {
+        // let d = req.body[item] ? JSON.parse(req.body[item]) : {page: 1, perPage: 10};
+        // let {page = 1, perPage = 10} = d;
+
+        let { page, perPage, id } = req.body[item]
+          ? JSON.parse(req.body[item])
+          : {}
+        id = Array.isArray(id) ? id : []
+
+        const paginate = !!(page || perPage)
+        page = page || 1
+        perPage = perPage || 100
+        perPage = Math.min(perPage, 100) // beri 100 grancum
+        let sqlData
+        let count = await DB(item)
+          .when(id.length > 0, (query) => {
+            query.whereIn("id", id)
+          })
+          .count()
+
+        let lastPage = 1
+        if (paginate) {
+          lastPage = Math.ceil(count / perPage)
+          sqlData = await DB(item)
+            .when(id.length > 0, function (query) {
+              query.whereIn("id", id)
+            })
+            .paginate(page, perPage) // Qani grancum beri default 1 100
+            .get()
+        } else {
+          sqlData = await DB(item)
+            .when(id.length > 0, function (query) {
+              query.whereIn("id", id)
+            })
+            .get()
         }
+        sendData.data[item] = {
+          data: await items[item](sqlData, res.locals.api_local),
+          count: count,
+          page: page,
+          perPage: perPage,
+          lastPage: lastPage,
+        }
+      } catch (e) {
+        console.error(e)
+        sendData.data[item] = null
+        sendData.errors[item] = "Not a correct data or server side error."
       }
     }
-    return res.send(sendData)
   }
+  return res.send(sendData)
 }
 
 module.exports = adminDataIndex
