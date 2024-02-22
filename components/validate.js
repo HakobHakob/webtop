@@ -1,8 +1,9 @@
 const Joi = require("joi")
 const db = require("../models")
+const { DB } = require("./db")
 const queryInterface = db.sequelize.getQueryInterface()
 
-const registrationSchema = () => {
+const userRegistrationSchema = () => {
   return {
     firstName: Joi.string().min(2).max(30).required(),
     lastName: Joi.string().min(2).max(30).required(),
@@ -13,14 +14,24 @@ const registrationSchema = () => {
   }
 }
 
-const loginScheme = () => {
+const employeeRegistrationSchema = () => {
+  return {
+    firstName: Joi.string().min(2).max(30).required(),
+    lastName: Joi.string().min(2).max(30).required(),
+    rank: Joi.string().min(2).max(512),
+    title: Joi.string().min(2).max(512),
+    description: Joi.string().min(2).max(512),
+  }
+}
+
+const loginSchema = () => {
   return {
     email: Joi.string().email().required(),
     password: Joi.string().min(6).max(20).required(),
   }
 }
 
-const userUpdateScheme = () => {
+const userUpdateSchema = () => {
   return {
     email: Joi.string().email(),
     first_name: Joi.string().min(2).max(30),
@@ -31,18 +42,47 @@ const userUpdateScheme = () => {
   }
 }
 
-const teamScheme = () => {
+const employeeUpdateSchema = () => {
   return {
-    firstName: Joi.string().min(2).max(30).required(),
-    lastName: Joi.string().min(2).max(30).required(),
-    // rank: Joi.string().min(2).max(512),
+    first_name: Joi.string().min(2).max(30),
+    last_name: Joi.string().min(2).max(30),
+    rank: Joi.string().min(2).max(512),
     title: Joi.string().min(2).max(512),
     description: Joi.string().min(2).max(512),
   }
 }
 
-const api_validate = (schema, req, res) => {
+const settingsSchema = () => {
+  return {
+    key: Joi.string().required(),
+    name: Joi.string().min(1).max(512),
+    description: Joi.string().min(1),
+    value: Joi.string().min(1),
+  }
+}
+
+const settingUpdateSchema = () => {
+  return {
+    key: Joi.string(),
+    name: Joi.string().min(1).max(512),
+    description: Joi.string().min(1),
+    value: Joi.string().min(1),
+  }
+}
+
+const schemasObject = {
+  userRegistration: userRegistrationSchema(),//
+  employeeRegistration: employeeRegistrationSchema(),//
+  login: loginSchema(),//
+  userUpdate: userUpdateSchema(),//
+  employeeUpdate: employeeUpdateSchema(),//
+  settingsSchema: settingsSchema(),//
+  settingUpdate: settingUpdateSchema(),//
+}
+
+const api_validate = (schemaName, req, res) => {
   const valid_err = {}
+  const schema = schemasObject[schemaName]
   const schema_joi = Joi.object(schema)
   let newSchema = {}
   for (let key in schema) {
@@ -61,10 +101,13 @@ const api_validate = (schema, req, res) => {
 
 const unique = async (table, columnName, columnValue) => {
   columnValue = columnValue || columnValue === null ? columnValue : ""
-  let exists = await queryInterface.select(null, table, {
-    where: { [columnName]: columnValue },
-  })
-  if (exists.length) {
+  let exists = true
+  try {
+    exists = await DB(table).where(columnName, columnValue).exists()
+  } catch (e) {
+    console.error(e)
+  }
+  if (exists) {
     return "The " + columnName + " is already in use"
   }
   return null
@@ -76,12 +119,9 @@ class ValidateClass {
     this._body = req.body
     this._files = req.files
     let answ = fn(this)
-
     return answ
   }
-  number() {
-    return this
-  }
+  number() {return this}
   integer() {}
   string() {}
   required() {}
@@ -89,10 +129,6 @@ class ValidateClass {
 
 module.exports = {
   api_validate,
-  loginScheme,
-  registrationSchema,
-  userUpdateScheme,
-  teamScheme,
   unique,
   ValidateClass,
 }

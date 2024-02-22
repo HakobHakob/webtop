@@ -7,11 +7,7 @@ const {
   logoutUser,
   makeDirectoryIfNotExists,
 } = require("../components/functions")
-const {
-  api_validate,
-  registrationSchema,
-  loginScheme,
-} = require("../components/validate")
+const { api_validate } = require("../components/validate")
 //import controllers media
 const sharp = require("sharp")
 const mediaController = require("../http/controllers/mediaController/mediaController")
@@ -40,8 +36,7 @@ router.get("/login", async (req, res, next) => {
 router.post("/login", async (req, res, next) => {
   req.session.errors = req.session.errors || {}
 
-  const scheme = loginScheme()
-  const validation_error = api_validate(scheme, req, res)
+  const validation_error = api_validate("login", req, res)
   if (validation_error) {
     for (const errKey in apiErrors) {
       for (const valid_err_key in validation_error) {
@@ -72,8 +67,8 @@ router.post("/login", async (req, res, next) => {
     return res.redirectBack()
   }
   const { id } = user.dataValues
-  await loginUser(id, req, res, "user")
-  await loginUser(id, req, res, "admin")
+  await loginUser(id, res, "user")
+  await loginUser(id, res, "admin")
 
   res.status(200)
   res.redirect("/")
@@ -92,8 +87,7 @@ router.get("/register", async (req, res, next) => {
 /* POST register page */
 router.post("/register", async (req, res, next) => {
   req.session.errors = req.session.errors || {}
-  const schema = registrationSchema()
-  const validation_error = api_validate(schema, req, res)
+  const validation_error = api_validate("userRegistration", req, res)
 
   if (validation_error) {
     for (const errKey in errors) {

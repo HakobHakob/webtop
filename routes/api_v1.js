@@ -10,16 +10,23 @@ const {
   logged,
   login,
   logOut,
-  register,
-  createEmployee,
-  updateEmployee,
-  destroy,
+  createUser,
+  updateUser,
+  deleteUser,
 } = require("../http/controllers/admin/userController")
 const { Media } = require("../models")
 const extFrom = require("../components/mimeToExt")
 const { saveFileContentToPublic } = require("../components/globalFunctions")
-// const adminDataIndex = require("../http/controllers/admin/adminDataController")
-
+const {
+  createEmployee,
+  deleteEmployee,
+  updateEmployee,
+} = require("../http/controllers/employeesController")
+const {
+  createSettings,
+  destroySetting,
+  updateSettings,
+} = require("../http/controllers/settingsController")
 
 // Group middlewares
 
@@ -30,7 +37,6 @@ const group = (callback) => {
 
 router.post("/admin/login", login)
 router.get("/admin/logged", logged)
-router.post("/admin/register", register)
 
 router.use(
   "/admin",
@@ -44,13 +50,21 @@ router.use(
     })
     adminRouter.get("/logout", logOut)
     //--------------------admin user---------------------------------
-    adminRouter.post("/employee/create", createEmployee)
-    adminRouter.post("/employee/update/:employee_id", updateEmployee)
-    adminRouter.delete("/user/delete/:user_id", destroy)
+    adminRouter.post("/user/create", createUser)
+    adminRouter.post("/user/update/:user_id([1-9]\\d?)", updateUser)
+    adminRouter.delete("/user/delete/:user_id([1-9]\\d?)", deleteUser)
     //--------------------admin team---------------------------------
-    // adminRouter.post("/team/create", teamsControllerCreate)
-    // adminRouter.post("/team/update/:user_id", teamsControllerUpdate)
-    // adminRouter.delete("/team/delete/:user_id", teamsControllerDestroy)
+    adminRouter.post("/employee/create", createEmployee)
+    adminRouter.post("/employee/update/:employee_id([1-9]\\d?)", updateEmployee)
+    adminRouter.delete(
+      "/employee/delete/:employee_id([1-9]\\d?)",
+      deleteEmployee
+    )
+
+    //--------------------settings---------------------------------
+    adminRouter.post("/setting/create", createSettings)
+    adminRouter.post("/setting/update/:setting_id([1-9]\\d?)", updateSettings)
+    adminRouter.delete("/setting/delete/:setting_id([1-9]\\d?)", destroySetting)
 
     // adminRouter.post('/notification', new UserController().notification);
     // adminRouter.post("/admin-data", adminDataIndex)

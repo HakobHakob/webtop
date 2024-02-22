@@ -1,5 +1,4 @@
 const { getWebAuth } = require("../components/functions")
-
 const { translations } = require("../components/translations")
 const { conf } = require("../config/app_config")
 
@@ -42,28 +41,17 @@ const authMiddleware = async (req, res, next) => {
       ) {
         if (language in translations[word]) {
           return translations[word][language]
-        } else if (
-          languageDefault &&
-          typeof languageDefault === "string" &&
-          languageDefault in translations[word]
-        ) {
+        } else if (languageDefault && typeof languageDefault === "string" && languageDefault in translations[word]) {
           return translations[word][languageDefault]
         }
       }
-      if (
-        word &&
-        typeof word === "object" &&
-        language &&
-        typeof language === "string"
-      ) {
+      if (word && typeof word === "object" && language && typeof language === "string") {
         if (language in word) {
           return word[language]
-        } else if (
-          languageDefault &&
-          typeof languageDefault === "string" &&
-          languageDefault in word
-        ) {
+        } else if (languageDefault && typeof languageDefault === "string" && languageDefault in word) {
           return word[languageDefault]
+        } else {
+          return ""
         }
       }
       return word
@@ -76,7 +64,7 @@ const authMiddleware = async (req, res, next) => {
   res.redirectBack = () => {
     return res.redirect(backURL)
   }
-  res.locals.access_token = req.cookies.access_token || null
+  // res.locals.access_token = req.cookies.access_token || null
   next()
 }
 

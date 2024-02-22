@@ -33,14 +33,14 @@ const index = async (resourse, localParams) => {
 }
 
 const collection = async (resource) => {
-  let aArr = []
-  for (let res of resource) {
+  const aArr = []
+  for (const res of resource) {
     aArr.push(await index(res))
   }
   return aArr
 }
 
-const teamsResource = async (resource = {}, localParams = {}) => {
+const employeeResource = async (resource = {}, localParams = {}) => {
   // localParams =>>> ?? conf.lang.default ?? null;
   if (Array.isArray(resource)) {
     return collection(resource)
@@ -48,4 +48,4 @@ const teamsResource = async (resource = {}, localParams = {}) => {
   return index(resource, localParams)
 }
 
-module.exports = teamsResource
+module.exports = employeeResource

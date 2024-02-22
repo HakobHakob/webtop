@@ -36,6 +36,7 @@ npm i sharp
 npm i winston
 npm i uuid
 npm i md5
+npm i file-type
 ```
 
 - Migrations

@@ -1,9 +1,8 @@
+const { DB } = require("../components/db")
 const bcrypt = require("bcrypt")
 const moment = require("moment/moment")
-const { DB } = require("../components/db")
-
-const table = "users" //change as you see fit․
-class UsersSeeder {
+const table = "employees" //change as you see fit․
+class EmployeeSeeder {
   constructor() {
     //
   }
@@ -14,19 +13,25 @@ class UsersSeeder {
         first_name: "Root",
         last_name: "Root",
         email: "root@mail.com",
-        password: bcrypt.hashSync("12345678", 8),
-        role: "admin",
-        email_verified_at: moment().format("yyyy-MM-DD HH:mm:ss"),
-        created_at: moment().format("yyyy-MM-DD HH:mm:ss"),
-        updated_at: moment().format("yyyy-MM-DD HH:mm:ss"),
-      },
-      {
-        first_name: "User",
-        last_name: "User",
-        email: "user@mail.com",
-        password: bcrypt.hashSync("12345678", 8),
-        role: "user",
-        email_verified_at: moment().format("yyyy-MM-DD HH:mm:ss"),
+        password: bcrypt.hashSync("123456", 8),
+        image: null,
+        images: null,
+        rank: JSON.stringify({
+          hy: "React-ի մասնագետ",
+          en: "React developer",
+          ru: "Разработчик React",
+        }),
+        title: JSON.stringify({
+          hy: "Main React developer",
+          en: "React-ի գլխավոր մասնագետ",
+          ru: "Главный разработчик React",
+        }),
+        description: JSON.stringify({
+          hy: "Լավ աշխատակից",
+          en: "Good working.",
+          ru: "Хороший работник.",
+        }),
+        active: 1,
         created_at: moment().format("yyyy-MM-DD HH:mm:ss"),
         updated_at: moment().format("yyyy-MM-DD HH:mm:ss"),
       },
@@ -53,4 +58,4 @@ class UsersSeeder {
     await DB(table).truncate()
   }
 }
-module.exports = UsersSeeder
+module.exports = EmployeeSeeder

@@ -423,3 +423,71 @@ app.use(notFoundHandler)
 app.use(errorHandler)
 
 module.exports = app
+
+// +++++++++++++++++++++++++++++++++++
+
+
+  // Handle employee avatar upload
+  let userAvatar = req.files ? req.files.image : null
+  let avatar = null
+  if (userAvatar) {
+    try {
+      const userAvatarPath = "storage/uploads/userAvatar/"
+      avatar = await handleFileUpload(userAvatar, 0, userAvatarPath)
+    } catch (error) {
+      res.status(422)
+      return res.send({ errors: error.message })
+    }
+  }
+
+  // Handle user images upload
+
+  let imagesJson = null
+  let userImages = {}
+  if (images) {
+    try {
+      const userPhotoPath = "storage/uploads/usersImages/"
+      await Promise.all(
+        images.map(async (image, index) => {
+          const imageName = await handleFileUpload(image, index, userPhotoPath)
+          const key = "Image_" + index
+          userImages[key] = imageName
+        })
+      )
+      imagesJson = JSON.stringify(userImages)
+    } catch (error) {
+      res.status(422)
+      return res.send({ errors: error.message })
+    }
+  }
+
+  let newEmployeeData = {
+    firstName,
+    lastName,
+    image: avatar,
+    images: imagesJson,
+    rank: rank,
+    title,
+    description,
+    email,
+    password: bcrypt.hashSync(password, 8),
+    emailVerifyedAt: moment().format("yyyy-MM-DD HH:mm:ss"),
+    createdAt: moment().format("yyyy-MM-DD HH:mm:ss"),
+    updatedAt: moment().format("yyyy-MM-DD HH:mm:ss"),
+  }
+
+  try {
+    await DB("users").create(newEmployeeData)
+  } catch (e) {
+    console.error(e)
+    res.status(422)
+    return res.send({ errors: "User not created." })
+  }
+  // await userNotification(
+  //   email,
+  //   "Employee created",
+  //   '<div style="font-size: 35px;color: #077">Hello, You are registered in WebTop, your password: ' +
+  //     password +
+  //     "</div>",
+  //   "html"
+  // )

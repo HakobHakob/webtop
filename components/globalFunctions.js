@@ -1,5 +1,6 @@
 const fs = require("fs")
 const path = require("path")
+
 const { translations } = require("./translations")
 const { conf } = require("../config/app_config")
 const { makeDirectoryIfNotExists, generateString } = require("./functions")
@@ -18,9 +19,9 @@ const saveFileContentToPublic = async (path, fileName, fileData) => {
   }
 }
 
-const translate = (word, language) => {
+const translate = (word, localParams) => {
   let languageDefault = conf.lang.default ?? null
-  let lang = language ?? conf.lang.default ?? null
+  let lang = localParams ?? conf.lang.default ?? null
   try {
     if (
       word &&
@@ -48,6 +49,8 @@ const translate = (word, language) => {
         languageDefault in word
       ) {
         return word[languageDefault]
+      } else {
+        return ""
       }
     }
     return word
@@ -56,23 +59,27 @@ const translate = (word, language) => {
   }
 }
 
-// Function to handle image upload
-const handleImageUpload = async (image, index = 0, path) => {
-  let imageName = md5(Date.now() + index.toString()) + generateString(4)
-  let ext = extFrom(image.mimetype, image.name)
-  if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg") {
-    throw new Error("File not a jpg or png.")
+// Function to handle File upload
+const handleFileUpload = async (file, path) => {
+  let fileName = md5(Date.now()) + generateString(4)
+  let ext = extFrom(file.mimetype, file.name)
+
+  // Check if the file is an image based on the MIME type
+  if (file.mimetype.startsWith("image")) {
+    if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg") {
+      throw new Error("File not a jpg or png.")
+    }
   }
-  let uploaded = await saveFileContentToPublic(
+  const uploaded = await saveFileContentToPublic(
     path,
-    imageName + ext,
-    image.data
+    fileName + ext,
+    file.data
   )
 
   if (!uploaded) {
     throw new Error("File not uploaded.")
   }
-  return path + imageName + ext
+  return path + fileName + ext
 }
 
 const deleteAllFilesInDir = async (dirPath) => {
@@ -82,7 +89,7 @@ const deleteAllFilesInDir = async (dirPath) => {
 }
 
 module.exports = {
-  handleImageUpload,
+  handleFileUpload,
   saveFileContentToPublic,
   deleteAllFilesInDir,
   translate,
