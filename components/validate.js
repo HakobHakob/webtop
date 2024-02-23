@@ -1,7 +1,5 @@
 const Joi = require("joi")
-const db = require("../models")
 const { DB } = require("./db")
-const queryInterface = db.sequelize.getQueryInterface()
 
 const userRegistrationSchema = () => {
   return {
@@ -121,7 +119,9 @@ class ValidateClass {
     let answ = fn(this)
     return answ
   }
-  number() {return this}
+  number() {
+    return this
+  }
   integer() {}
   string() {}
   required() {}
