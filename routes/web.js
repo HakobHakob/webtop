@@ -1,19 +1,20 @@
 const express = require("express")
 const router = express.Router()
 const bcrypt = require("bcrypt")
-const { User } = require("../models")
+const moment = require("moment/moment")
+const { DB } = require("../components/db")
 const {
   loginUser,
   logoutUser,
   makeDirectoryIfNotExists,
 } = require("../components/functions")
-const { api_validate } = require("../components/validate")
+const { api_validate, unique } = require("../components/validate")
+const { apiErrors } = require("../components/util")
+const { userNotification } = require("../http/notifications/userNotification")
+
 //import controllers media
 const sharp = require("sharp")
 const mediaController = require("../http/controllers/mediaController/mediaController")
-const { apiErrors } = require("../components/util")
-const { register } = require("../http/controllers/admin/userController")
-const { userNotification } = require("../http/notifications/userNotification")
 const multer = require("multer")
 const upload = multer()
 
@@ -34,8 +35,10 @@ router.get("/login", async (req, res, next) => {
 
 /* POST login page */
 router.post("/login", async (req, res, next) => {
+  if (res.locals.auth.user) {
+    return res.redirect("/")
+  }
   req.session.errors = req.session.errors || {}
-
   const validation_error = api_validate("login", req, res)
   if (validation_error) {
     for (const errKey in apiErrors) {
@@ -50,7 +53,7 @@ router.post("/login", async (req, res, next) => {
   }
 
   const { email, password } = req.body
-  const user = await User.findOne({ where: { email: email } })
+  const user = await DB("users").where("email", email).first()
 
   if (!user) {
     req.session.errors["email"] = "Invalid email !!!"
@@ -60,7 +63,6 @@ router.post("/login", async (req, res, next) => {
 
   //  cheking that is valid email or password
   const isValid = await bcrypt.compare(password, user.dataValues.password)
-
   if (!isValid) {
     req.session.errors["password"] = "Invalid password !!!"
     res.status(422)
@@ -87,6 +89,11 @@ router.get("/register", async (req, res, next) => {
 /* POST register page */
 router.post("/register", async (req, res, next) => {
   req.session.errors = req.session.errors || {}
+  const uniqueErr = await unique("users", "email", req.body.email)
+  if (uniqueErr) {
+    res.status(422)
+    return res.send({ errors: { email: uniqueErr } })
+  }
   const validation_error = api_validate("userRegistration", req, res)
 
   if (validation_error) {
@@ -112,16 +119,26 @@ router.post("/register", async (req, res, next) => {
     message = "User password generated automatically, it send to email."
   }
 
-  const { firstName, lastName, email, password } = req.body
+  const { firstName, lastName, email, password, role } = req.body
+  const newUserData = {
+    first_name: firstName,
+    last_name: lastName,
+    email,
+    email_verified_at: moment().format("yyyy-MM-DD HH:mm:ss"),
+    role,
+    photo: image,
+    password: bcrypt.hashSync(password, 8),
+    created_at: moment().format("yyyy-MM-DD HH:mm:ss"),
+    updated_at: moment().format("yyyy-MM-DD HH:mm:ss"),
+  }
 
-  User.create({
-    firstName: firstName,
-    lastName: lastName,
-    email: email,
-    password: password,
-    role: "admin",
-    emailVerifyedAt: new Date(),
-  })
+  try {
+    await DB("users").create(newUserData)
+  } catch (e) {
+    console.error(e)
+    res.status(422)
+    return res.redirectBack()
+  }
 
   await userNotification(
     email,
@@ -138,10 +155,10 @@ router.post("/register", async (req, res, next) => {
 
 router.get("/logout", async (req, res, next) => {
   if (res.locals.auth.user) {
-    await logoutUser(res.locals.auth.user.dataValues.id, "user", req, res)
+    await logoutUser(res.locals.auth.user.id, "user", req, res)
   }
   if (res.locals.auth.admin) {
-    await logoutUser(res.locals.auth.admin.dataValues.id, "admin", req, res)
+    await logoutUser(res.locals.auth.admin.id, "admin", req, res)
   }
   res.redirectBack()
 })
