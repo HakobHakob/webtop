@@ -168,7 +168,6 @@ const updateUser = async (req, res, next) => {
 
   try {
     user = await DB("users").find(user_id)
-
     if (!user) {
       res.status(422)
       return res.send({

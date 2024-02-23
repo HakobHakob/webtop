@@ -193,7 +193,7 @@ router.post("/portfolio", async (req, res) => {
       __basedir + "/public/images/uploads/" + `${file.fieldname}`
     const uuidMatch = file.filename.match(/^([a-f\d]+(?:-[a-f\d]+)*)/i)
     let uuid = uuidMatch ? uuidMatch[1] : undefined
-    makeDirectoryIfNotExists(tmpAvatarPath)
+    await makeDirectoryIfNotExists(tmpAvatarPath)
   } catch (error) {
     console.log(error)
     return res.send(`Error when trying upload images: ${error}`)

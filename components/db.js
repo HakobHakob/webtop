@@ -100,12 +100,12 @@ function fDB(q) {
         }
         resolve(result)
       })
+      con.end()
     })
   })
 }
 
 class DBClass {
-  //"SELECT * FROM products WHERE disable = 0 LIMIT 10"
   constructor(table) {
     this._tableName = table
     this._table = _col(table)
