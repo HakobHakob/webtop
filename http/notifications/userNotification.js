@@ -4,7 +4,7 @@ const { conf } = require("../../config/app_config")
 
 let transporter = nodemailer.createTransport(conf.mail.transporter)
 
-let userNotification = async (
+const userNotification = async (
   email,
   subject = "",
   message = "",

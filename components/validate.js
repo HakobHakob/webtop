@@ -71,13 +71,13 @@ const settingUpdateSchema = () => {
 }
 
 const schemasObject = {
-  userRegistration: userRegistrationSchema(),//
-  employeeRegistration: employeeRegistrationSchema(),//
-  login: loginSchema(),//
-  userUpdate: userUpdateSchema(),//
-  employeeUpdate: employeeUpdateSchema(),//
-  settingsSchema: settingsSchema(),//
-  settingUpdate: settingUpdateSchema(),//
+  userRegistration: userRegistrationSchema(),
+  employeeRegistration: employeeRegistrationSchema(),
+  login: loginSchema(),
+  userUpdate: userUpdateSchema(),
+  employeeUpdate: employeeUpdateSchema(),
+  settingsSchema: settingsSchema(),
+  settingUpdate: settingUpdateSchema(),
 }
 
 const api_validate = (schemaName, req, res) => {

@@ -18,7 +18,6 @@ npm i bcrypt
 npm i mysql2
 npm i express-form-data
 npm i express-session
-npm i express-validator
 npm i express-fileupload
 npm i cors
 npm install cookie-parser
@@ -29,9 +28,6 @@ npm i node-cron
 npm i joi
 npm i jsonwebtoken
 npm i dotenv
-npm i sequelize
-npm i sequelize-cli
-npx sequelize-cli init
 npm i sharp
 npm i winston
 npm i uuid

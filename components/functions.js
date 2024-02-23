@@ -1,14 +1,9 @@
 const bcrypt = require("bcrypt")
-const { User } = require("../models")
-const db = require("../models")
-const { boolean } = require("joi")
 const { conf } = require("../config/app_config")
 const fs = require("node:fs")
 const path = require("node:path")
 const { DB } = require("./db")
 const moment = require("moment")
-
-const queryInterface = db.sequelize.getQueryInterface()
 
 const getTokenData = async (userId, role, token) => {
   let userSessions = []
@@ -124,7 +119,7 @@ const getWebAuth = async (req, res) => {
             console.error(e)
           }
         }
-        const auth = await User.findOne({ where: { id: userId } })
+        let auth = null
         try {
           auth = await DB("users").find(userId)
         } catch (e) {
@@ -193,7 +188,7 @@ const saveAndGetUserToken = async (userId, role = "user") => {
 
 const loginUser = async (userId, res, role = "user") => {
   const tokens = generateToken(userId, role)
-  
+
   res.cookie(conf.web.prefix + conf.token.delimiter + role, tokens.token, {
     maxAge: conf.token.maxAge,
     httpOnly: true,
@@ -205,8 +200,8 @@ const saveToken = async (userId, role, token) => {
   try {
     await DB(conf.token.table).create({
       user_id: userId,
-      role: role,
-      token: token,
+      role,
+      token,
       refresh_token_date: moment().format("yyyy-MM-DD HH:mm:ss"),
       updated_at: moment().format("yyyy-MM-DD HH:mm:ss"),
     })
