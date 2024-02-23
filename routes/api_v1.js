@@ -30,15 +30,12 @@ const {
 const adminDataIndex = require("../http/controllers/admin/adminDataController")
 
 // Group middlewares
-
 const group = (callback) => {
   callback(router)
   return router
 }
-
 router.post("/admin/login", login)
 router.get("/admin/logged", logged)
-
 router.use(
   "/admin",
   group((adminRouter) => {
