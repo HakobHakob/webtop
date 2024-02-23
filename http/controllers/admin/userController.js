@@ -214,8 +214,8 @@ const updateUser = async (req, res, next) => {
 
     const userPhoto = req.files ? req.files.photo : null
     if (userPhoto) {
-      const avatarPath = "storage/uploads/users/"
-      updateUserData.photo = await handleFileUpload(userPhoto, avatarPath)
+      const userPhotoPath = "storage/uploads/users/"
+      updateUserData.photo = await handleFileUpload(userPhoto, userPhotoPath)
     }
 
     if (Object.keys(updateUserData).length > 0) {
