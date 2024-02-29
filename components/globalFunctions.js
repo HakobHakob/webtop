@@ -66,7 +66,7 @@ const handleFileUpload = async (file, path) => {
 
   // Check if the file is an image based on the MIME type
   if (file.mimetype.startsWith("image")) {
-    if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg") {
+    if (ext.toLowerCase() !== ".png" && ext.toLowerCase() !== ".jpg" && ext.toLowerCase() !== ".jpeg") {
       throw new Error("File not a jpg or png.")
     }
   }

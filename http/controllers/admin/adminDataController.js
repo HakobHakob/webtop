@@ -16,10 +16,12 @@ const adminDataIndex = async (req, res, next) => {
         // let d = req.body[item] ? JSON.parse(req.body[item]) : {page: 1, perPage: 10};
         // let {page = 1, perPage = 10} = d;
 
-        let { page, perPage, id } = req.body[item]
+        let { page, perPage, id, key, name } = req.body[item]
           ? JSON.parse(req.body[item])
           : {}
         id = Array.isArray(id) ? id : []
+        key = Array.isArray(key) ? key : []
+        name = Array.isArray(name) ? name : []
 
         const paginate = !!(page || perPage)
         page = page || 1
@@ -28,7 +30,13 @@ const adminDataIndex = async (req, res, next) => {
         let sqlData
         let count = await DB(item)
           .when(id.length > 0, (query) => {
-            query.whereIn("id", id)
+            query.orWhereIn("id", id)
+          })
+          .when(key.length > 0, (query) => {
+            query.orWhereIn("key", key)
+          })
+          .when(name.length > 0, (query) => {
+            query.orWhereIn("name", name)
           })
           .count()
 
@@ -36,15 +44,27 @@ const adminDataIndex = async (req, res, next) => {
         if (paginate) {
           lastPage = Math.ceil(count / perPage)
           sqlData = await DB(item)
-            .when(id.length > 0, function (query) {
-              query.whereIn("id", id)
+            .when(id.length > 0, (query) => {
+              query.orWhereIn("id", id)
             })
-            .paginate(page, perPage) // Qani grancum beri default 1 100
+            .when(key.length > 0, (query) => {
+              query.orWhereIn("key", key)
+            })
+            .when(name.length > 0, (query) => {
+              query.orWhereIn("name", name)
+            })
+            .paginate(page, perPage)
             .get()
         } else {
           sqlData = await DB(item)
-            .when(id.length > 0, function (query) {
-              query.whereIn("id", id)
+            .when(id.length > 0,  (query) => {
+              query.orWhereIn("id", id)
+            })
+            .when(key.length > 0,  (query) => {
+              query.orWhereIn("key", key)
+            })
+            .when(name.length > 0,  (query) => {
+              query.orWhereIn("name", name)
             })
             .get()
         }

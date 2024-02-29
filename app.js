@@ -1,3 +1,17 @@
+/**
+ * // calling body-parser to handle the Request Object from POST requests
+var bodyParser = require('body-parser');
+
+// parse application/json, basically parse incoming Request Object as a JSON Object 
+app.use(bodyParser.json());
+
+// parse application/x-www-form-urlencoded, basically can only parse incoming Request Object if strings or arrays
+app.use(bodyParser.urlencoded({ extended: false }));
+
+// combines the 2 above, then you can parse incoming Request Object if object, with nested objects, or generally any type.
+app.use(bodyParser.urlencoded({ extended: true }));
+ */
+
 const express = require("express")
 const app = express()
 const path = require("path")
@@ -20,9 +34,9 @@ app.use(
     extended: true,
     parameterLimit: 50000,
   })
-  )  
-  const webRouter = require("./routes/web")
-  const apiRouter = require("./routes/api_v1")
+)
+const webRouter = require("./routes/web")
+const apiRouter = require("./routes/api_v1")
 
 const {
   notFoundHandler,

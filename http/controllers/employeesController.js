@@ -245,7 +245,7 @@ const deleteEmployee = async (req, res, next) => {
     res.status(422)
     return res.send({ errors: "Employee not deleted." })
   }
-  return res.send({
+  return res.send({id: employee_id,
     message: "Employee with this id " + employee_id + " deleted successfully.",
   })
 }
